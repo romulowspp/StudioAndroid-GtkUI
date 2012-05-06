@@ -1,0 +1,129 @@
+#!/bin/bash
+#
+# Please remember that this is BETA!!!
+#
+echo "
+Hi there!
+
+I know some people dont have the knowledge to edit stuff.
+That's were I made this for! It let's you enter the device name,
+and you are guided through the rest.
+
+Then it fixes bugs and build errors.
+
+Because you use this and it already fixes some errors, 
+I expect a ***** rating
+
+Press ENTER to continue!"
+read line
+clear; echo "You must have pre-synced a REPO before you do this."; echo "Press ENTER to continue or R to go to the sync menu..."; read opt
+if [ "$opt" = "R" ] || [ "$opt" = "r" ]
+then
+	$ScriptDir/$MyCommand 3
+fi
+clear
+echo
+echo "Enter the device brand and codename."
+echo -n "Enter option [Example: Samsung Crespo]:  "
+read opt
+set $opt
+Brand=$1
+CodeName=$2
+clear; echo "Github will be opened. On the first tab opened ($2 device), you need to pick"
+echo "a git to grab the device folder from. Koush & CyanogenMod are recommended to use."
+echo "Press ENTER"
+read line
+xdg-open "https://github.com/search?q=$1 device&type=Everything&repo=&langOverride=&start_value=1" > /dev/null
+
+echo "When clicked on one of the links, copy the link FROM ://"
+echo "[Example] ://github.com/CyanogenMod/android_device_samsung_crespo.git"
+echo "You can paste using Shift+Insert"
+echo -n "Enter git:  "
+read Device
+DeviceGit=git$Device
+clear
+echo "Good. Now another TAB will be opened ($2 vendor)."
+echo "Press enter"
+read line
+xdg-open "https://github.com/search?q=$1 vendor&type=Everything&repo=&langOverride=&start_value=1" > /dev/null
+echo "Do exactly the same as you did before;"
+echo "Pick one of the gits (Koush / Cyanogen), copy the link from ://"
+echo -n "Paste the link here:  "
+read Vendor
+VendorGit=git$Vendor
+clear
+echo "This is what you entered:
+
+$Brand $CodeName
+device: $Device
+vendor: $Vendor"
+echo "git clone $DeviceGit
+git clone $VendorGit
+$Brand $CodeName" > ~/IncludeSOURCE
+
+echo "PM Me the automatically generated file IncludeSOURCE in your home directory,"
+echo "IF you want me to include!"
+	
+if ! [ -d $ScriptDir/WORKING_DIR_$1 ]
+then
+	mkdir $ScriptDir/WORKING_DIR_$1
+	cd $ScriptDir/WORKING_DIR_$1
+else
+	cd $ScriptDir/WORKING_DIR_$1
+fi
+if ! [ -d $ScriptDir/WORKING_DIR_$1/.repo ]
+then
+   if [ "$1" = "1" ]
+   then
+    GBSOURCE
+   fi
+   if [ "$1" = "2" ]
+   then
+    ICSSOURCE
+   fi
+   if [ "$1" = "3" ]
+   then
+    CMSOURCE
+   fi
+   if [ "$1" = "4" ]
+   then
+    OxGBSOURCE
+   fi
+   if [ "$1" = "5" ]
+   then
+    AOKPSOURCE
+   fi
+   if [ "$1" = "6" ]
+   then
+    OxICSSOURCE
+   fi
+   if [ "$1" = "7" ]
+   then
+    MiuiSOURCE
+   fi
+   if [ "$1" = "8" ]
+   then
+    CnaSource
+   fi
+fi
+
+
+mkdir -p $Dir/device/$Brand
+git clone $GitDevice $Dir/device/$Brand
+mkdir -p $Dir/vendor/$Brand
+git clone $GtiVendor $Dir/vendor/$Brand
+
+
+for CstDir in $(cd $Dir/device/$Brand && find lib* -maxdepth 3 -type d)
+do
+	Rm=${CstDir##*/}
+	cd $Dir/hardware
+	File=$(find $Rm -maxdepth 1 -type d)
+	echo "Enter YES"
+	rm -ri $File
+done
+
+
+Include=$(tail -1 $Dir/device/$Brand/*/vendorsetup.sh)
+echo "$Include" > $(cd $Dir/vendor && find -name vendorsetup.sh)
+exit

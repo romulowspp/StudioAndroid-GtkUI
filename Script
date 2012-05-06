@@ -1,0 +1,1566 @@
+#!/bin/bash
+	function SourceMenu
+	{
+	  SplashScreen
+	  echo
+	  echo " What would you like to build from source?"
+	  echo
+	  echo "  1) $GBSOURCE"
+	  echo "  2) $ICSSOURCE"
+	  echo "  3) $CMSOURCE"
+	  echo "  4) $OxGBSOURCE"
+	  echo "  5) $AOKPSOURCE"
+	  echo "  6) $OxICSSOURCE"
+	  echo "  7) $MIUISOURCE"
+	  echo "  8) $CNASOURCE"
+	  echo
+	  echo " MAKE SURE YOU HAVE AT LEAST 20GB OF FREE SPACE"
+	  echo
+	  echo
+	  echo -n "  Enter option:  "
+	  read opt
+	   echo
+		case $opt in
+			1) Name="GB";;
+			2) Name="ICS";;
+			3) Name="CM7";;
+			4) Name="Ox";;
+			5) Name="AOKP";;
+			7) Name="Miui";;
+			8) Name="CNA";;
+		esac
+	   Source $opt
+
+	  echo "Done!"
+	}
+
+	function Source
+	{
+	SourceDir="~/WORKING_DIR_$Name"
+	SourceDir=$(eval "echo $SourceDir")
+	if ! [ -d $SourceDir ]
+	then
+		mkdir $SourceDir
+	fi
+	cd $SourceDir
+	if ! [ -d $SourceDir/.repo ]
+	then
+	   case $1 in
+		1) GBSOURCE;;
+		2) ICSSOURCE;;
+		3) CMSOURCE;;
+		4) OxGBSOURCE;;
+		5) AOKPSOURCE;;
+	#	6) OxICSSOURCE;;
+	#	7) MiuiSource;;
+		8) CnaSource;;
+	#	9) CAFSOURCE;;
+		*) InvOpt;;
+	    esac
+	fi
+	repo sync -f
+	Error
+	SplashScreen
+	echo "Devices available: "
+	echo
+	typeset -i i=1
+	for File in $(find $SourceDir/device -name vendorsetup.sh)
+	do
+		Command=$(tail -1 $File)
+		DispDevice=${Command##*" "}
+		echo "$i) $DispDevice"
+		i=i+1
+	done
+	echo
+	echo -n "Please choose a device:  "
+	read opt
+	File=$(find ./device -name vendorsetup.sh)
+	SetDevice="$"$opt
+	set $File
+	Device=$(eval "echo $SetDevice")
+	Command=$(tail -1 $Device)
+	LunchCommand=${Command##*" "}
+	cd $SourceDir
+	. build/envsetup.sh
+	Error
+	lunch $LunchCommand
+	Error
+	make droid
+	Error
+	}
+
+
+	ICSSOURCE="Stock AOSP ICS Source"
+
+# ^^ Is the value that will be displayed in menu
+
+	function ICSSOURCE
+	{
+	repo init -u https://android.googlesource.com/platform/manifest -b android-4.0.1_r1
+	}
+
+# ^^ That are the commands that will be executed when option is chosen
+# Change the "repo init -u" to the one who ported the ROM to your device or stock
+
+	GBSOURCE="Stock AOSP GB Source"
+
+	function GBSOURCE
+	{
+	repo init -u https://android.googlesource.com/platform/manifest -b android-2.3.7_r1
+	}
+
+	CMSOURCE="Official CyanogenMod7 Source"
+
+	function CMSOURCE
+	{
+	repo init -u git://github.com/CyanogenMod/android.git -b gingerbread
+	}
+
+	OxGBSOURCE="Oxygen source"
+
+	function OxGBSOURCE
+	{
+	repo init -u git://github.com/oxygen-rom/android_manifest.git -b gingerbread
+	}
+
+	AOKPSOURCE="Android Open Kang SOURCE"
+
+	function AOKPSOURCE
+	{
+	repo init -u https://github.com/AOKP/platform_manifest.git -b master
+	}
+
+	OxICSSOURCE="[UNAVAILABLE] Oxygen ICS Source"
+
+	function OxICSSOURCE
+	{
+	InvOpt
+	#repo init -u
+	}
+	
+	MIUISOURCE="MIUI PatchROM"
+	
+	function MiuiSource
+	{
+	repo init -u git://github.com/MiCode/patchrom.git
+	}
+
+	CNASOURCE="CodeName Android Source (ICS)"
+	function CnaSource
+	{
+	repo init -u git://github.com/CNA/android_manifest.git -b mod-4.0.3
+	}
+	
+	CAFSOURCE="Code Aurora Source"
+	function CAFSOURCE
+	{
+	InvOpt
+	}
+#
+# KERNELS
+#
+
+
+
+function Kernels
+{
+SplashScreen
+echo
+echo "Wich kernel do you want to build??"
+echo
+echo "1) $Kernel1"
+}
+
+
+Kernel1="Stock android kernel"
+Kernel2="CyanogenMod Kernel"
+Kernel3=""
+Kernel4=""
+Kernel5=""
+
+function Kernel1
+{
+	repo init -u https://android.googlesource.com/platform/manifest
+	repo sync -j8
+}
+
+
+
+#
+# End of section
+#
+
+
+if [ -f $ScriptDir/data ]
+then
+	$ScriptDir/data
+fi
+
+
+Beta="true"
+
+
+MyCommand=${0##*/}
+Dir=${0%%/"$MyCommand"}
+ScriptDir=$(cd $Dir && pwd)
+ScriptVersion="0.52"
+
+LogFile="$ScriptDir/log"
+Installer="$ScriptDir/SAI"
+JarFile="$ScriptDir/Utils/apktool.jar"
+SignJar="$ScriptDir/Utils/signapk.jar"
+SmaliJar="$ScriptDir/Utils/smali-1.3.2.jar"
+BakSmaliJar="$ScriptDir/Utils/baksmali-1.3.2.jar"
+SZip="$ScriptDir/7za"
+Zipalign="$ScriptDir/Utils/zipalign"
+optipng="$ScriptDir/Utils/optipng"
+ADB="$ScriptDir/Utils/adb"
+
+
+
+
+clear
+
+
+echo "---------------------------------------------------" >>$LogFile
+date >> $LogFile
+echo "v$ScriptVersion
+---------------------------------------------------" >> $LogFile
+
+
+
+function Restart
+{
+$ScriptDir/$MyCommand
+set ""
+exit
+}
+
+function ReOpt
+{
+$ScriptDir/$MyCommand $MenuOpt
+exit
+}
+
+function SplashScreen
+{
+if [ "$1" != "1" ]
+then
+	clear
+else
+	echo
+	echo
+	echo
+	echo
+fi
+if [ "$Beta" = "true" ]
+then
+Warn; echo "                               BETA VERSION. PLEASE REPORT BUGS!"; EndWarn
+fi
+
+echo -e "\e[40;36m ***************************************************************************************************
+ *                                       Studio Android                                            *
+ *                                          by mDroidd                                             *
+ *                                            v$ScriptVersion                                                *
+ ***************************************************************************************************\e[00;40m"
+echo
+}
+
+
+function Done
+{
+SplashScreen 1
+echo
+echo "Done :)"
+echo
+echo -n -e "\rContinueing in 3..."
+sleep 1
+echo -n -e "\rContinueing in 2..."
+sleep 1
+echo -n -e "\rContinueing in 1..."
+sleep 1
+}
+
+function InvOpt
+{
+SplashScreen
+echo
+echo "ERROR! Invalid option!"
+echo "This option may not be defined yet... SORRY!"
+echo
+echo -n -e "\rContinueing in 3..."
+sleep 1
+echo -n -e "\rContinueing in 2..."
+sleep 1
+echo -n -e "\rContinueing in 1..."
+sleep 1
+Restart
+}
+
+function Error
+{
+	paplay "/usr/share/sounds/gnome/default/alerts/bark.ogg"
+	SplashScreen 1
+	if [ "$?" = "1" ]
+	then
+		echo "---->>Error<<----" >> $LogFile
+	fi
+	echo "An error occured."
+	echo "Press ENTER to continue. The error is included in the log."
+	read line
+}
+
+function Warn
+{
+echo -n -e "\e[31;40m"
+}
+
+function EndWarn
+{
+echo -n -e "\e[00;40m"
+}
+
+function Open
+{
+	cd $ScriptDir
+	if ! [ -f $ScriptDir/Utils.zip ]
+	then
+	 SplashScreen
+	 echo
+	 echo "ERROR, DELETED UTILS.ZIP?!"
+	 sleep 3
+	 SplashScreen
+	 exit
+	fi
+	if ! [ -d $ScriptDir/Utils ]
+	then
+		./7za x -y ./Utils.zip >> $LogFile
+	fi
+	return 0
+}
+
+function Close
+{
+	cd $ScriptDir
+	SplashScreen
+}
+
+while getopts "h" OPTIONS ; do
+    case ${OPTIONS} in
+        h|-help) Help;;
+    esac
+done
+
+
+if [ "$1" = "" ]
+then
+	$ScriptDir/$MyCommand 0 2>&1 | tee -a $LogFile
+	exit
+fi
+
+if [ "$1" != "" ] && [ "$1" != "0" ]
+then
+	Command=$1
+	$ScriptDir/$MyCommand 0 $Command 2>&1 | tee -a $LogFile
+	exit
+fi
+
+resize -s 31 100 > /dev/null
+echo -e "\e[40m"
+
+
+
+function Resize
+{
+	function CheckResize
+	{
+		SplashScreen 
+		echo "Place the images in SA/Resize (sub-directories supported!)"
+		echo "Then give the image format (usually png)"
+		echo "Last, give the resize percentage"
+		echo
+		echo "Placed something in it: [$Place]"
+		echo "Gave image format:      [$Format]"
+		echo "Gave resize percentage: [$Per]"
+		echo
+		echo "h) Home"
+		echo "x) Exit"
+		echo
+		echo "Place images in $ScriptDir/Resize..."
+		echo -n "NEW: OR, place APK inside $ScriptDir/Resize..."
+	}
+
+	CheckResize
+
+	mkdir -p $ScriptDir/Resize
+
+	while [ "$Perc" = "" ]
+	do
+
+		sleep 1
+		Empty=$(ls $ScriptDir/Resize)
+		if ! [ "$Empty" = "" ] && [ "$Place" = "" ]
+		then
+			if [ "$(ls $ScriptDir/Resize/*.apk)" != "" ]
+			then
+				ResizeApk
+			fi
+			Place="&"
+			CheckResize
+			echo
+			echo -n "Now give the image format:  "
+		fi
+		if [ "$Place" = "&" ] && [ "$Format" = "" ]
+		then
+			read opt
+			Ext=$opt
+			Format="&"
+			CheckResize
+		fi
+		if [ "$Format" = "&" ] && [ "$Perc" = "" ]
+		then
+			echo
+			echo "The images you want to resize FROM, are in ..DPI?"
+			echo "Enter option [X/H/M/L]"
+			read opt
+			if [ "$opt" = "X" ]
+			then
+				ResIn="720"
+				DirIn="xhdpi"
+			fi
+			if [ "$opt" = "H" ]
+			then
+				ResIn="480"
+				DirIn="hdpi"
+			fi
+			if [ "$opt" = "M" ]
+			then
+				ResIn="320"
+				DirIn="mdpi"
+			fi
+			if [ "$opt" = "L" ]
+			then
+				ResIn="240"
+				DirIn="ldpi"
+			fi
+		
+			echo
+			echo "The resolution you want to resize it TO, is in ...DPI?"
+			echo "Enter option [X/H/M/L]"
+			read opt
+			if [ "$opt" = "X" ]
+			then
+				ResOut="720"
+				DirOut="xhdpi"
+			fi
+			if [ "$opt" = "H" ]
+			then
+				ResOut="480"
+				DirOut="hdpi"
+			fi
+			if [ "$opt" = "M" ]
+			then
+				ResOut="320"
+				DirOut="mdpi"
+			fi
+			if [ "$opt" = "L" ]
+			then
+				ResOut="240"
+				DirOut="ldpi"
+			fi
+			Perc=$(echo "($ResOut / $ResIn) * 100" | bc -l)
+		fi
+	
+		SrcDir=$ScriptDir/Resize
+		DstDir=$ScriptDir/Resized
+		if [ "$APKResize" = "true" ]
+		then
+			SrcDir=$ScriptDir/Resizing/res/drawable-$DirIn
+			DstDir=$ScriptDir/Resizing/res/drawable-$DirOut
+		fi
+	
+	done
+
+	if ! [ -d $DstDir ]
+	then
+		mkdir -p $DstDir
+	fi
+
+	clear
+	echo "We search for" \*\.$Ext "from $SrcDir"
+	echo "And the results will be put in:" $DstDir
+	echo
+	sleep 1
+
+	typeset -i i=0
+	for Line in $(find $SrcDir -name \*.$Ext)
+	do
+		i=i+1	
+		FileName=${Line##*/}
+		FileFolder1=${Line##*"$ScriptDir/Resize/"}
+		if [ "$APKResize" = "true" ]
+		then
+			FileFolder1=${Line##*"$SrcDir"}
+		fi
+		FileFolder=${FileFolder1%%$FileName*}
+		mkdir -p  $DstDir/$FileFolder
+		echo -n -e "\r$i  We are now converting" $Line 
+		echo
+		if [ "$FileFolder" != "" ]
+		then
+			DstDir2="$DstDir/$FileFolder"
+		else
+			DstDir2=$DstDir
+		fi
+		DstFile=$DstDir2/$FileName
+		convert $Line -resize $Perc% $DstFile
+
+	done
+
+	if (( i == 0 ))
+	then
+		echo
+		echo
+		echo "ERROR!" Files found: $i $i $i $i $i $i $i $i 
+		echo
+		echo
+	else
+		echo
+		echo
+		echo Files converted: $i
+		echo
+		echo
+	fi
+	
+	if [ "$APKResize" = "true" ]
+	then
+		cd $ScriptDir/Resizing
+		echo " Recompressing APK..."
+		$SZip a -y -tzip "$ScriptDir/Resized/Resized-$APKNAME" ./* -mx9 >> $LogFile
+		UnsignedApk="$ScriptDir/Resized/Resized-$APKNAME"
+		UnsignedName=${UnsignedApk##*"/"}
+		Key1="$ScriptDir/Utils/testkey.x509.pem"
+		Key2="$ScriptDir/Utils/testkey.pk8"
+		echo " Extracting Utils.zip"
+		Open
+		echo " Re-signing APK... "
+		java -jar $SignJar -w $Key1 $Key2 "$UnsignedApk" "$ScriptDir/Resized/Signed-$UnsignedName"
+	fi
+
+	Done 1
+}
+
+function ResizeApk
+{
+	APKResize="true"
+	if [ -d "$ScriptDir/Resizing" ]
+	then
+		rm -r $ScriptDir/Resizing
+	fi
+	mkdir -p $ScriptDir/Resizing
+	APK=$(ls $ScriptDir/Resize/*.apk)
+	set $APK
+	APKNAME=${1##*"/"}
+	$SZip x -y -o$ScriptDir/Resizing $APK
+}
+
+function CopyFrom
+{
+	 SplashScreen
+	 echo
+	 echo "Usage: ToDir FromDir Ext"
+	 echo
+	 echo "Explanation: this tool lists the files inside a directory"
+	 echo "And copies that from another directory to that directory."
+	 echo
+	 echo "Example: you want to theme framework-res.apk with theme.apk"
+	 echo "So you enter framework-res as ToDir, and theme as FromDir"
+	 echo 
+	 echo -n "Enter values:  "
+	 read opt
+	 set $opt
+	 if (( $# != 3 ))
+	 then
+	  SplashScreen
+	  echo "ERROR! Usage: ToDir FromDir Ext"
+	  exit
+	 fi
+	 if ! [ -d $ToDir ] || ! [ -d $FromDir ]
+	 then
+		SplashScreen
+		echo "ERROR, $ToDir/$FromDir does not exist!" 
+		exit 1
+	 fi
+	 ToDir=$(eval "echo $1")
+	 FromDir=$(eval "echo $2")
+	 Ext=$3
+	 typeset -i i=0
+	 for Line in $(ls $FwDir/*.$Ext)
+	 do 
+		AbsFile=${Line##*/}
+		echo "copy $SrScriptDir/$AbsFile to $FwDir"
+		cp -f $SrScriptDir/$AbsFile $FwDir
+		i=i+1
+	 done
+
+		clear
+		echo
+		echo
+		echo "Files copied: 00000$i"
+		echo
+		echo "Press enter."
+		read line
+		Restart
+}
+
+
+function Theme
+{
+	SplashScreen
+	echo "Hey! This is new!"
+	echo
+	echo "Place the images you want to theme inside $ScriptDir/Theme"
+	echo "When you did that, this will continue"
+	if ! [ -d $ScriptDir/Theme ]
+	then
+		mkdir Theme
+	fi
+	while :
+	do
+		sleep 1
+		cd $ScriptDir/Theme
+		Check=$(ls)
+		if [ "$Check" != "" ]
+		then
+			echo "You placed something in it :)"
+			ContinueTheme
+			Restart
+			exit
+		fi
+	done
+}
+
+
+function ContinueTheme
+{
+	SplashScreen
+	echo "OK, you placed something in it!"
+	echo
+	echo "Now choose the values you want to REMOVE:"
+	echo "In a scale from 0-100 red,green,blue - WITHOUT SPACES!"
+	echo "Example: purple = 25,50,0"
+	echo
+	echo "WARNING: It is recommended to start with a white theme."
+	echo "Cause theming red images blue will make it purple instead!"
+	echo
+	echo -n "  Please choose values RGB:  "
+	read opt
+	set $opt
+	Values=$opt
+	cd $ScriptDir/Theme
+	ThemeFiles=$(ls *.apk)
+	typeset -i i=0
+	for ThemeFile in $(ls *.png)
+	do
+		i=i+1
+	done
+	cd ..
+	SplashScreen
+	echo "Files found: $i"
+	echo "Press ENTER to start theming..."
+	read line
+	for ThemeFile in $ThemeFiles
+	do
+		mogrify -colorize $Values $ScriptDir/Theme/$ThemeFile
+	done
+	cd -
+}
+
+function Optimize
+{
+
+	mkdir -p $ScriptDir/APK/EX
+	SplashScreen
+	echo " Hello!"
+	echo "  Place the images you wawnt to optimize inside $ScriptDir/APK/EX"
+	echo "  Yes, that means you need to extract the APK first."
+	echo " When you did that, this will continue :)"
+	while :
+	do
+		sleep 1
+		cd $ScriptDir/APK/EX
+		Check=$(ls)
+		if [ "$Check" != "" ]
+		then
+			echo "You placed something in it :)"
+			DoOptimize
+			Restart
+			exit
+		fi
+	done
+}
+
+function DoOptimize
+{
+	for IMAGE in $(cd $ScriptDir/APK/EX && find -name *.png)
+	do
+		$optipng -099 "$IMAGE"
+	done
+	Done 1
+}
+
+function KernelMenu
+{
+	mkdir ~/KernelSource
+	cd ~/KernelSource
+	mkdir aosp kernel repo
+	cd aosp
+	mkdir master
+	cd master
+	Kernels
+	read opt
+	set $opt
+	case $opt in
+		1) Kernel1;;
+		2) Kernel2;;
+		3) Kernel3;;
+		4) Kernel4;;
+		5) Kernel5;;
+	esac
+
+	export ARCH=arm
+	export CROSS_COMPILER=arm-eabi-
+	export CROSS_COMPILE=arm-eabi-
+	export PATH=$PATH:~/KernelSource/aosp/master/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/
+}
+
+function Install
+{
+	echo "Waiting for device..."
+	$ADB "wait-for-device"
+	echo "Press enter to continue."
+	read line
+	cd $ScriptDir/APK/OUT
+	for APK in $(ls Signed*.apk)
+	do
+		$ADB install -r $APK
+	done
+}
+
+function Sign
+{
+	mkdir -p $ScriptDir/APK/IN $ScriptDir/APK/OUT
+	Open
+	SplashScreen
+	typeset -i i=0
+	for Keys in $(cd $ScriptDir/Utils && ls *.pk8)
+	do
+		DispName=${Keys%%".pk8"*}
+		i=i+1
+		echo "$i) $DispName"
+	done
+	echo " (Platform=system) (SuperUser=Root) (Testkey=normal)"
+	echo -n "  Wich key do you want to use?"
+	read opt
+	Key=$(cd $ScriptDir/Utils && ls *.pk8)
+	set $Key
+	KeyNumb="$"$opt
+	Key=$(eval "echo $KeyNumb")
+	Name=${Key%%".pk8"*}
+	Key1="$ScriptDir/Utils/$Name.x509.pem"
+	Key2="$ScriptDir/Utils/$Name.pk8"
+
+	SplashScreen
+	echo
+	typeset -i u=0
+	echo "  IN APK/OUT:"
+	for Unsigned in $(cd $ScriptDir/APK/OUT && ls Unsigned*.apk)
+	do
+		u=u+1
+		echo " $u) $Unsigned"
+	done
+	typeset -i a=$u
+	echo
+	echo "  IN APK/IN:"
+	for APK in $(cd $ScriptDir/APK/IN && ls *.apk)
+	do
+		a=a+1
+		echo " $a) $APK"
+	done
+	if [ "$a" -gt "0" ]
+	then
+		echo
+		echo " a) All. $a Files in total"
+	fi
+	echo
+	echo -n " Wich APK do you want to sign?? "
+	read opt
+	echo
+	if [ "$opt" = "a" ]
+	then
+		cd $ScriptDir/APK/OUT
+		for UnsignedApk in $(ls Unsigned*.apk)
+		do
+			ApkName=${UnsignedApk##*"Unsigned-"}
+			ApkName=${ApkName%%"."*}
+			java -jar $SignJar -w $Key1 $Key2 "$UnsignedApk" "Signed-$ApkName.apk"
+			echo
+		done
+		cd $ScriptDir/APK/IN
+		for UnsignedApk in $(ls *.apk)
+		do
+			ApkName=${UnsignedApk##*"Unsigned-"}
+			ApkName=${ApkName%%"."*}
+			java -jar $SignJar -w $Key1 $Key2 "$UnsignedApk" "$ScriptDir/APK/OUT/Signed-$ApkName.apk"
+			echo
+		done
+		Restart
+	fi
+	if [ "$opt" -le "$u" ]
+	then
+		cd $ScriptDir/APK/OUT
+		UnsignedApk=$(ls Unsigned*.apk)
+	else
+		cd $ScriptDir/APK/IN
+		UnsignedApk=$(ls *.apk)
+	fi
+	set $UnsignedApk
+	ApkNumb="$"$opt
+	SignApk=$(eval "echo $ApkNumb")
+	ApkName=${UnsignedApk##*"Unsigned-"}
+	ApkName=${ApkName%%"."*}
+	java -jar $SignJar -w $Testkey1 $Testkey2 "$SignApk" "Signed-$ApkName.apk"
+	Restart		
+
+
+
+
+	mkdir -p $ScriptDir/APK/OUT
+	Open
+	SplashScreen
+	echo
+	typeset -i i=0
+	for Keys in $(cd $ScriptDir/Utils && ls *.pk8)
+	do
+		DispName=${Keys%%".pk8"*}
+		i=i+1
+		echo "$i) $DispName"
+	done
+	echo " (Platform=system) (SuperUser=Root) (Testkey=normal)"
+	echo -n "  Wich key do you want to use?"
+	read opt
+	Key=$(cd $ScriptDir/Utils && ls *.pk8)
+	set $Key
+	KeyNumb="$"$opt
+	Key=$(eval "echo $KeyNumb")
+	Name=${Key%%".pk8"*}
+	Key1="$ScriptDir/Utils/$Name.x509.pem"
+	Key2="$ScriptDir/Utils/$Name.pk8"
+	typeset -i i=0
+	cd $ScriptDir/APK/OUT
+	for UnsignedApk in $(cd $ScriptDir/APK/OUT && ls Unsigned*.apk && cd $ScriptDir/APK/SIGN && ls *.apk)
+	do
+		i=i+1
+		echo " $i) $UnsignedApk"
+	done
+	echo
+	if [ "$i" != "0" ]
+	then
+		echo " a) All! $i Files in total."
+		echo
+		echo -n " Wich APK do you want to sign?? "
+		read opt
+		if [ "$opt" = "a" ]
+		then
+			for UnsignedApk in $(ls Unsigned*.apk)
+			do
+				ApkName=${UnsignedApk##*"Unsigned-"}
+				ApkName=${ApkName%%"."*}
+				java -jar $SignJar -w $Key1 $Key2 "$UnsignedApk" "Signed-$ApkName.apk"
+				echo
+			done
+
+			for UnsignedApk in $(cd $ScriptDir/APK/SIGN && ls *.apk)
+			do
+				ApkName=${UnsignedApk##*"Unsigned-"}
+				ApkName=${ApkName%%"."*}
+				java -jar $SignJar -w $Key1 $Key2 "$UnsignedApk" "$ScriptDir/APK/OUT/Signed-$ApkName.apk"
+				echo
+			done
+			Restart
+		fi
+
+		UnsignedApk=$(ls Unsigned*.apk)
+		set $UnsignedApk
+		ApkNumb="$"$opt
+		SignApk=$(eval "echo $ApkNumb")
+		ApkName=${UnsignedApk##*"Unsigned-"}
+		ApkName=${ApkName%%"."*}
+		java -jar $SignJar -w $Testkey1 $Testkey2 "$SignApk" "Signed-$ApkName.apk"
+	else
+		SplashScreen
+		echo "  No files starting with Unsigned- have been found."
+		echo "  If you want to sign, please compile it"
+		echo "  Or place it in $ScriptDir/APK/SIGN"
+		echo "Press ENTER"
+		read line
+	fi
+}
+
+function Zipalign
+{
+	Open
+	SplashScreen
+	echo
+	typeset -i i=1
+	cd $ScriptDir/APK/OUT
+	SignedApk=$(ls Signed*.apk)
+	if [ "$SignedApk" = "0" ]
+	then
+		SplashScreen
+		echo "ERROR! You must sign the APK's first."
+		echo "Press ENTER to continue"
+		read line
+		Restart
+	fi
+	for SignedApk in $(ls Signed*.apk)
+	do
+		echo " $i) $SignedApk"
+		i=i+1
+	done
+	i=i-1
+	echo
+	echo " a) All! $i Files in total."
+	echo
+	echo -n " Wich APK do you want to sign?? "
+	read opt
+	if [ "$opt" = "a" ]
+	then
+		for SignedApk in $(ls Signed*.apk)
+		do
+			ApkName=${SignedApk##*"Signed-"}
+			ApkName=${ApkName%%"."*}
+			Out="$ScriptDir/APK/OUT/Zipaligned-Signed-$ApkName.apk"
+			$Zipalign -fv 4 $SignedApk $Out
+			echo
+		done
+		Restart
+	fi
+
+	SignedApk=$(ls Signed*.apk)
+	set $UnsignedApk
+	ApkNumb="$"$opt
+	ZipaApk=$(eval "echo $ApkNumb")
+	ApkName=${SignedApk##*"Signed-"}
+	ApkName=${ApkName%%"."*}
+	Out="$ScriptDir/APK/OUT/Zipaligned-Signed-$ApkName.apk"
+	$Zipalign -fv 4 $SignedApk $Out
+	Restart
+}
+
+function DeCompile
+{
+	Open
+	mkdir -p $ScriptDir/APK/DEC $ScriptDir/APK/IN $ScriptDir/APK/OUT
+	SplashScreen
+	echo
+	typeset -i i=0
+	echo "   DECOMPILE:"
+	for Decompile in $(cd $ScriptDir/APK/IN && ls *.apk)
+	do
+		i=i+1
+		echo " $i) $Decompile"
+	done
+	if [ "$i" -gt "0" ]
+	then
+		echo " d) All! $i Files in total."
+	fi
+	typeset -i a=$i
+	echo
+	echo "   COMPILE:"
+	for Compile in $(cd $ScriptDir/APK/DEC && find -maxdepth 1 -type d)
+	do
+		a=a+1
+		DecFolder=${Compile##*/}
+		echo " $a) $DecFolder"
+	done
+	if [ "$a" -gt "$i" ]
+	then
+		a=a-i
+		echo " c) All! $a Files in total."
+	fi
+	echo -n " Wich APK do you want to (de)compile?? "
+	read opt
+	echo
+	if [ "$opt" = "d" ]
+	then
+		cd $ScriptDir/APK/IN
+		for APK in $(ls *.apk)
+		do
+			DispName=${APK%%"."*}
+			java -jar $JarFile d -f $APK "$ScriptDir/APK/DEC/$DispName"
+			echo
+		done
+		Restart
+	fi
+	if [ "$opt" = "c" ]
+	then
+		cd $ScriptDir/APK/DEC
+		for APKFOLDER in $(find -maxdepth 1 -type d)
+		do
+			FolderName=${APKFOLDER##*"/"}
+			java -jar $JarFile b -f $APKFOLDER "$ScriptDir/APK/OUT/Unsigned-$FolderName.apk"
+			echo
+		done
+		Restart
+	fi
+	cd $ScriptDir/APK/IN
+	APK=$(ls *.apk)
+	set $APK
+	ApkNumb="$"$opt
+	DecApk=$(eval "echo $ApkNumb")
+	Check=$(echo "$opt < $i" | bc)
+	if [ "$opt" -le "$i" ]
+	then
+		DispName=${DecApk%%".apk"}
+		DispName=${DispName##*/}
+		java -jar $JarFile d -f $DecApk "$ScriptDir/APK/DEC/$DispName"
+	else
+		cd $ScriptDir/APK/DEC
+		APKFOLDER=$(find -maxdepth 1 -type d)
+		set $APKFOLDER
+		CompOpt=$(echo "$opt - $i" | bc)
+		ApkNumb="$"$CompOpt
+		ComApk=$(eval "echo $ApkNumb")
+		FolderName=${ComApk##*"/"}
+		java -jar $JarFile b -f $ComApk "$ScriptDir/APK/OUT/Unsigned-$FolderName.apk"
+	fi
+	Restart		
+}
+
+
+function ExPackage
+{
+	Open
+	mkdir -p $ScriptDir/APK/EX $ScriptDir/APK/OUT $ScriptDir/APK/IN
+	SplashScreen
+	echo
+	typeset -i i=0
+	echo "   EXTRACT:"
+	for Extract in $(cd $ScriptDir/APK/IN && ls *.apk)
+	do
+		i=i+1
+		echo " $i) $Extract"
+	done
+	if [ "$i" -gt "0" ]
+	then
+		echo " e) All! $i Files in total."
+	fi
+	typeset -i a=$i
+	echo
+	echo "   REPACKAGE:"
+	for Repackage in $(cd $ScriptDir/APK/EX && find -maxdepth 1 -type d)
+	do
+		a=a+1
+		RepackageFolder=${Repackage##*/}
+		echo " $a) $RepackageFolder"
+	done
+	if [ "$a" -ge "$i" ]
+	then
+		a=a-i
+		echo " r) All! $a Files in total."
+	fi
+	echo -n " Wich APK do you want to extract/repackage?? "
+	read opt
+	echo
+	if [ "$opt" = "e" ]
+	then
+		cd $ScriptDir/APK/IN
+		for APK in $(ls *.apk)
+		do
+			DispName=${APK%%".apk"*}
+			DispName=${DispName##*"/"}
+			$SZip x -y -o"$ScriptDir/APK/EX/$DispName" $APK
+			echo
+		done
+		Restart
+	fi
+	if [ "$opt" = "r" ]
+	then
+		cd $ScriptDir/APK/EX
+		for ExFolder in $(find -maxdepth 1 -type d)
+		do
+			cd $ExFolder
+			Name=${ExFolder##*"/"}
+			$SZip a -y -tzip "$ScriptDir/APK/OUT/Repackaged-$Name.apk" ./* -mx9
+		done
+		Restart
+	fi
+	if [ "$opt" -le "$i" ]
+	then
+		cd $ScriptDir/APK/IN
+		APK=$(ls *.apk)
+		set $APK
+		ApkNumb="$"$opt
+		ExApk=$(eval "echo $ApkNumb")
+		DispName=${ExApk%%".apk"*}
+		DispName=${DispName##*"/"}
+		$SZip x -y -o"$ScriptDir/APK/EX/$DispName" $ExApk
+	else
+		cd $ScriptDir/APK/EX
+		ExFolders=$(find . -maxdepth 1 -type d)
+		RepOpt=$(echo "$opt - $i" | bc)
+		set $ExFolders
+		ApkNumb="$"$RepOpt
+		RepApk=$(eval "echo $ApkNumb")
+		Name=${RepApk##*"/"}
+		echo $RepApk
+		cd $RepApk
+		$SZip a -y -tzip "$ScriptDir/APK/OUT/Repackaged-$Name.apk" ./* -mx9
+	fi
+	Restart		
+}
+
+function Compile
+{
+	Open
+	mkdir -p $ScriptDir/APK/OUT
+	SplashScreen
+	echo
+	typeset -i i=1
+	for APKFOLDER in $(cd $ScriptDir/APK/DEC && find -maxdepth 1 -type d)
+	do
+		echo " $i) $APKFOLDER"
+		i=i+1
+	done
+	i=i-1
+	echo
+	echo " c) Compile all! $i Files in total."
+	echo
+	echo -n " Wich APK do you want to compile?? "
+	read opt
+	if [ "$opt" = "a" ]
+	then
+		for APKFOLDER in $(cd $ScriptDir/APK/DEC && find -maxdepth 1 -type d)
+		do
+			FolderName=${APKFOLDER##*"/"}
+			java -jar $JarFile b $APKFOLDER "$ScriptDir/APK/OUT/Unsigned-$FolderName.apk"
+			echo
+		done
+		Restart
+	fi
+	APKFOLDER=$(cd $ScriptDir/APK/DEC && find -maxdepth 1 -type d)
+	set $APKFOLDER
+	ApkNumb="$"$opt
+	ComApk=$(eval "echo $ApkNumb")
+	FolderName=${ComApk##*"/"}
+	cd $ScriptDir/APK/DEC
+	java -jar $JarFile b $ComApk "$ScriptDir/APK/OUT/Unsigned-$FolderName.apk"
+}
+
+
+
+function Extract
+{
+	mkdir -p $ScriptDir/APK/EX $ScriptDir/APK/IN $ScriptDir/APK/OUT $ScriptDir/APK/DEC
+	SplashScreen
+
+	typeset -i i=1
+	for APK in $(cd $ScriptDir && find -name *.apk)
+	do
+		echo " $i) $APK"
+		i=i+1
+	done
+	i=i-1
+	echo
+	echo " a) All! $i Files in total."
+	echo
+	echo -n " Wich APK do you want to extract?? "
+	read opt
+	if [ "$opt" = "a" ]
+	then
+		for APK in $(cd $ScriptDir && find -name *.apk)
+		do
+			Name=${APK##*"/"}
+			Name=${Name%%"."*}
+			$SZip x -o"$ScriptDir/APK/EX/$Name" $APK
+			Restart
+		done
+	fi
+	APK=$(cd $ScriptDir && find -name *.apk)
+	set $APK
+	ApkNumb="$"$opt
+	ExApk=$(eval "echo $ApkNumb")
+	$SZip x -o"$ScriptDir/APK/EX" $ExApk
+}
+
+
+function Repackage
+{
+	mkdir -p $ScriptDir/APK/OUT mkdir -p $ScriptDir/APK/EX
+	SplashScreen
+	cd $ScriptDir/APK/EX
+	typeset -i i=0
+	for ExdFolder in $(find -maxdepth 1 -type d)
+	do
+		i=i+1
+		echo " $i) $ExdFolder"
+	done
+	echo
+	echo " a) All! $i Files in total."
+	echo
+	echo -n " Wich APK do you want to repackage?? "
+	read opt
+	if [ "$opt" = "a" ]
+	then
+		for ExFolder in $(find -maxdepth 1 -type d)
+		do
+			cd $ExFolder
+			Name=${ExFolder##*"/"}
+			$SZip a -tzip "$ScriptDir/APK/OUT/Repackaged-$Name.apk" ./* -mx9
+		done
+	 Restart
+	fi
+	ExFolders=$(find -maxdepth 1 -type d)
+	set $ExFolders
+	ApkNumb="$"$opt
+	RepApk=$(eval "echo $ApkNumb")
+	Name=${RepApk##*"/"}
+	cd $RepApk
+	$SZip a -tzip "$ScriptDir/APK/OUT/Repackaged-$Name.apk" ./* -mx9
+}
+
+function SwitchBuild
+{
+	cd $ScriptDir
+	rm Build*~
+	SplashScreen
+	echo
+	echo "1)  Other - guides you through a tutorial and fixes bugs"
+	typeset -i i=1
+	for Name in $(find -name \*Build*)
+	do
+		i=i+1
+		NameDisp=${Name##*"Build"}
+		echo "$i)  $NameDisp"
+	done
+	echo
+	echo -n "Enter Option:  "
+	read opt
+	if [ "$opt" = "1" ]
+	then
+		Source=$(find -name \*Include)
+		Inc=${Source##*/}
+		. $Inc
+	else
+		Sources=$(find -name \*Build*)
+		set $Sources
+		opt=$(echo "$opt - 1" | bc)
+		Source="$"$opt
+		Source=$(eval "echo $Source")
+		Source=${Source##*"/"}
+		cd $ScriptDir
+		. $Source
+		echo "  Included $Source values"
+		echo
+		echo "Do you want to do that on startup?"
+		echo -n "  Enter option [Y/n] :  "
+		read answer
+		if [ "$answer" != "n" ] || [ "$answer" != "N" ] || [ "$answer" != "no" ] 
+		then
+			echo "#!/bin/bash" > $ScriptDir/data
+			echo ". $Source" >> $ScriptDir/data
+		fi
+		Done
+	fi
+}
+
+
+function SDKInstaller
+{
+	 SplashScreen
+	 Open
+	 cp $ScriptDir/7za ~
+	 cd
+	 echo "DOWNLOADING SDK INSTALLER..."
+	 echo
+	 wget http://dl.google.com/android/android-sdk_r16-linux.tgz
+	 SDK=$(find -name android-sdk*.tgz -maxdepth 1)
+	 ./7za x -y $SDK
+	 rm $SDK
+	 chmod 777 ~/android-sdk-linux -R
+	 cd ~/android-sdk-linux/tools
+	 ./android > /dev/null
+	 rm ~/7za
+	 Restart
+}
+
+function JDKInstaller
+{
+	SplashScreen
+	Warn
+	if [ -f ~/Downloads/jdk*.bin ]
+	then
+		rm jdk*.bin
+	fi
+	echo
+	echo "OK, this is a little harder..."
+	echo "After clicking ENTER, you need to download the JAVA binary."
+	echo "But it depends on your PC..."
+	echo "Is your PC 64-bits, use x64. Is it Intel Itanium, use Intel Itanium."
+	echo "Else, and if you don't know, use x86 (i586)."
+	echo "You need the .bin version, not the .rpm.bin"
+	EndWarn
+	echo "Click ENTER to open the oracle website and download."
+	read line
+	xdg-open http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u29-download-513648.html >> /dev/null
+	cd ~/Downloads
+	Change=0
+	sleep 2
+	while [ "$Change" != "1" ]
+	do
+		typeset -i o=0
+		for File in $(ls -l)
+		do
+			o=o+1
+		done
+		Old=$o
+		sleep 1
+		typeset -i n=0
+		for File in $(ls -l)
+		do
+			n=n+1
+		done
+		New=$n
+		if [ "$Old" != "$New" ]
+		then
+			Change="1"
+		fi
+	done
+	LS=$(ls -c)
+	set $LS
+	File=$1
+	SplashScreen
+	echo "Is this the file you downloaded: $File ?"
+	echo "If so, wait till download has finished and press enter."
+	echo "Else, do Ctrl+C and report error."
+	read line
+	LS=$(ls -c)
+	set $LS
+	File=$1
+	if [ "$File" != "*.bin" ]
+	then
+		File="$File.bin"
+	fi
+	SplashScreen
+	echo "After this, you will be requested to enter your password."
+	echo "That is, so that Java is not in your home directory, but safe elsewhere."
+	echo "Nothing will go wrong. Just follow the onscreen commands!"
+	echo "Press ENTER"
+	read line
+	echo "Making directory /opt/java/64/"
+	sudo mkdir -p /opt/java/64/
+	echo "Copying $File"
+	sudo cp $File /opt/java/64
+	echo "File copied"
+	cd /opt/java/64
+	echo "Setting permissions..."
+	sudo chmod +x $File
+	echo "Opening $File."
+	./$File
+	exit
+}
+
+
+function Smali
+{
+	mkdir -p $ScriptDir/Advance/Smali/IN $ScriptDir/Advance/Smali/OUT
+	SplashScreen
+	echo
+	echo " Paste all smali files inside $ScriptDir/Advance/Smali/IN"
+	while :
+	do
+		sleep 1
+		Check=$(ls $ScriptDir/Advance/Smali/IN)
+		if [ "$Check" != "" ]
+		then
+			echo " Nice, you placed something in it!"
+			Check="&"
+			typeset -i i=0
+			for File in $(cd $ScriptDir/Advance/Smali/IN && ls *.smali)
+			do
+				i=i+1
+			done
+			echo "  Smali files found: $i"
+			echo " Enter the output name. Example: if you want output.dex, enter output."
+			read opt
+			Output=$opt.dex
+			cd $ScriptDir/Advance/Smali/IN
+			java -jar $SmaliJar ./*.smali -o $ScriptDir/Advance/Smali/OUT/$Output
+			rm -rf $ScriptDir/LatestOutput
+			ln -s $ScriptDir/Advance/Smali/OUT $ScriptDir/LatestOutput
+			Done
+			Restart
+		fi
+	done
+}
+
+
+function Baksmali
+{
+	mkdir -p $ScriptDir/Advance/Baksmali/IN $ScriptDir/Advance/Baksmali/OUT
+	SplashScreen
+	echo
+	echo " Paste all DEX files inside $ScriptDir/Advance/Smali/IN"
+	while :
+	do
+		sleep 1
+		Check=$(ls $ScriptDir/Advance/Baksmali/IN)
+		if [ "$Check" != "" ]
+		then
+			echo " Nice, you placed something in it!"
+			Check="&"
+			typeset -i i=0
+			cd $ScriptDir/Advance/Baksmali/IN
+			for File in $(ls *dex)
+			do
+				i=i+1
+			done
+			echo "  Dex files found: $i"
+			echo "  Press ENTER to continue !"
+			read opt
+			for File in $(ls *dex)
+			do
+				Output=${File%%"."*}
+				Output=${Output##*/}
+				Output=$ScriptDir/Advance/Baksmali/OUT/$Output
+				java -jar $BakSmaliJar $File -o $Output
+			done
+			rm -rf $ScriptDir/LatestOutput
+			ln -s $Output $ScriptDir/LatestOutput
+			Done
+			Restart
+		fi
+	done
+}
+
+function DeodexFile
+{
+	OdexFile=$1
+	FrameworkDir=$2
+	API_LVL=$3
+	OdexName=${OdexFile##*"/"}
+	echo
+	echo 
+	echo " Disassebling $OdexName..."
+	java -Xmx512m -jar $BakSmaliJar -d $FrameworkDir -a $API_LVL -x $OdexFile -o $ScriptDir/Advance/CURRENT/out
+	cd $ScriptDir/Advance/CURRENT
+	echo " Assembling $OdexName into a .dex file..."
+	java -jar -Xmx512m $SmaliJar -a $API_LVL ./out -o $ScriptDir/Advance/CURRENT/classes.dex
+	echo " Removing Smali directory"
+	rm -rf $ScriptDir/Advance/CURRENT/out
+	echo " Finding corresponding APK..."
+	Name=${OdexFile%%".odex"*}
+	APKPlace="$Name.apk"
+	APKName=${##"/"*}
+	if ! [ -e $APKPlace ]
+	then
+		echo "Error, $APKPlace does not exist!"
+		Error="&"
+	fi
+	if [ "$Error" != "&" ]	
+	then
+		echo "  Updating APK with classes.dex included..."
+		$SZip u -tzip -y $APKPlace $ScriptDir/Advance/CURRENT/classes.dex -mx9 >> /dev/null
+		echo " Cleaning up..."
+		rm -rf $ScriptDir/Advance/CURRENT/*
+		rm $OdexFile
+	fi			
+}
+
+
+function Deodex
+{
+	Open
+	mkdir -p $ScriptDir/Advance/DE-ODEX/IN $ScriptDir/Advance/DE-ODEX/OUT $ScriptDir/Advance/WORKING $ScriptDir/Advance/CURRENT
+	SplashScreen
+	echo "Hello! This is my home-made tool to deodex :D"
+	echo "A couple things are necessary to complete."
+	echo
+	echo "Paste your ROMs update inside $ScriptDir/Advance/DE-ODEX/IN..."
+	while ! [ "$API" = "&" ]
+	do
+		sleep 1
+		cd $ScriptDir/Advance/DE-ODEX/IN
+		Check=$(find -name *.zip)
+		if [ "$Check" != "" ]
+		then
+			echo " Nice, you placed something in it!"
+			ZipFile=$(ls *.zip)
+			$SZip x -y $ZipFile -o$ScriptDir/Advance/WORKING
+			Placed="&"
+		fi
+		if [ "$Placed" = "&" ]
+		then
+			echo "  GB API = 10"
+			echo "  HC = 11, 12, 13"
+			echo "  ICS = 14"
+			echo -n "  Enter API:  "
+			read API_LVL
+			API="&"
+		fi
+		if [ "$API" = "&" ]
+		then
+			AppDir=$(find $ScriptDir/Advance/WORKING -type d -name app)
+			FrameworkDir=$(find $ScriptDir/Advance/WORKING -type d -name framework)
+			cd $AppDir
+			for OdexFile in $(ls *.odex)
+			do
+				OdexPath="$AppDir/$OdexFile"
+				DeodexFile $OdexPath $FrameworkDir $API_LVL
+		
+			done
+		fi
+				
+	done
+}
+
+
+
+function AromaMenu
+{
+	$ScriptDir/Aroma
+	if [ "$?" = "999" ]
+	then
+		exit
+	fi
+}
+
+ case $2 in
+	6) clear;;
+	2) CopyFrom;;
+	3) Resize;;
+	4) Theme;;
+	5) Optimize;;
+	7) SourceMenu;;
+	8) KernelMenu;;
+	10) SwitchBuild;;
+	11) SDKInstaller;;
+	12) JDKInstaller;;
+	13) DeCompile;;
+	14) ExPackage;;
+	15) Sign;;
+	16) Zipalign;;
+	17) Compile; Zipalign; Sign;;
+	18) Install;;
+	19) Smali;;
+	20) Baksmali;;
+	22) Deodex;;
+	23) AromaMenu;;
+	Cl) rm -r $ScriptDir/Theme $ScriptDir/APK $ScriptDir/Advance $ScriptDir/LatestOutput ~/bin/SA $ScriptDir/log;;
+	l) gedit $ScriptDir/$LogFile;;
+	*) InvOpt;;
+ esac
+
+clear
+echo -e "\n\n\n"

@@ -1,0 +1,104 @@
+#!/bin/bash
+
+Beta="true"
+
+MyCommand=${0##*/}
+Dir=${0%%/"$MyCommand"}
+ScriptDir=$(cd $Dir && pwd)
+MainCommand="$ScriptDir/SA"
+
+mkdir -p $ScriptDir/Advance/AROMA/Latest
+
+function Exit
+{
+	exit 999
+}
+
+function Warn
+{
+echo -n -e "\e[31;40m"
+}
+
+function EndWarn
+{
+echo -n -e "\e[00;40m"
+}
+
+function SplashScreen
+{
+	if [ "$1" != "1" ]
+	then
+		clear
+	else
+		echo
+		echo
+		echo
+		echo
+	fi
+	if [ "$Beta" = "true" ]
+	then
+	Warn; echo "                               BETA VERSION. PLEASE REPORT BUGS!"; EndWarn
+	fi
+
+echo -e "\e[40;36m ***************************************************************************************************
+ *                                       AromaInstaller                                            *
+ *                                          by mDroidd                                             *
+ ***************************************************************************************************\e[00;40m"
+}
+
+function LatestBinary
+{
+	if [ -f $ScriptDir/"showpost.php?p=21755937&postcount=2" ]
+	then
+		rm "$ScriptDir/showpost.php?p=21755937&postcount=2"
+	fi
+	wget "http://forum.xda-developers.com/showpost.php?p=21755937&postcount=2"
+	Line=$(awk -v line=152 'NR == line { printf( "%s\n", $0); }' "showpost.php?p=21755937&postcount=2")
+	Link=${Line##*'<a href="'}
+	Link=${Link%%'" target'*}
+	if [ -e $ScriptDir/Aroma.zip ]
+	then
+		rm -rf $ScriptDir/Aroma.zip
+	fi
+	wget $Link -O $ScriptDir/Aroma.zip
+	cp -f Aroma.zip $ScriptDir/Advance/AROMA/Latest
+}
+
+function Menu
+{
+	while :
+	do
+		SplashScreen
+		echo
+		echo -e "\e[40;36m   #####################               #####################                #####################"
+		echo -e "   #   Utils:          #               #   Device:         #                #                   #"
+		echo -e "   #####################               #####################                #####################\e[00;40m"
+		echo "   Cl) Clean the workspace               6) Pick update-binary                  )                "
+		echo "    1) Install Utilities                  )                                     )                  "
+		echo "    2) Grab latest binary                 )                                     )         "
+		echo "     )                                    )                                     )             "
+		echo "     )                                    )                                     )                   "
+		echo "     )                                    )                                     )            "
+		echo "                                          )                      "
+		echo ""
+		echo -e "\e[40;36m   ####################"
+		echo -e "   #   Options:       #"
+		echo -e "   ####################\e[00;40m"
+		echo "    b) Back to main menu"
+		echo "    l) Check the log!"
+		echo "    x) Exit"
+		echo
+		echo -n "       Enter option:  "
+		read opt
+		case $opt in
+			2) LatestBinary;;
+			Cl) cd $ScriptDir; rm -r APK Advance Utils log Aroma;;
+			b) $MainCommand; exit;;
+			l) gedit $logfile;;
+			x) Exit;;
+		esac
+	done
+}
+
+Menu
+

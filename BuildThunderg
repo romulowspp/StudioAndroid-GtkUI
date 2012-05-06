@@ -1,0 +1,242 @@
+#!/bin/bash
+#
+# Copyright (c) 2012 - mDroidd (martijn.ruijzendaal@gmail.com)
+#
+# Please ask permission to use parts of this script
+# I will be happy to give you!
+#
+# Credits go to: tommytomatoe, bash, android, github, DEVs
+#
+
+# Attention! Because the source section is device-specific, I made some
+# Values here to make it easier for you to edit.
+#
+
+
+#
+# KERNELS
+#
+
+function Kernels
+{
+SplashScreen
+echo
+echo "Wich kernel do you want to build??"
+echo
+echo "1) $Kernel1"
+echo "2) $Kernel2"
+echo "3) $Kernel3"
+echo "4) $Kernel4"
+echo "5) $Kernel5"
+
+}
+
+
+Kernel1="Stock android kernel"
+Kernel2="CyanogenMod Kernel"
+Kernel3="Ta-Kernel"
+Kernel4="_Arjen_ Kernel"
+Kernel5="_Arjen_ 3.0 Kernel (Experimental!)"
+
+function Kernel1
+{
+	repo init -u https://android.googlesource.com/platform/manifest
+	repo sync -j8
+}
+
+function Kernel2
+{
+	git://github.com/CyanogenMod/lge-kernel-msm7x27.git
+	repo sync -j8
+}
+
+function Kernel3
+{
+	repo init -u git://github.com/thachtunganh/lge-kernel-thunderg.git
+	repo sync -j8
+}
+
+function Kernel4
+{
+	repo init -u git://github.com/p500-ics-cm9/Franco-ICS-Kernel.git
+	repo sync -j8
+}
+
+function Kernel5
+{
+	repo init -u git://github.com/p500-ics-cm9/LGE_3.0_KERNEL.git
+	repo sync -j8
+}
+
+
+#
+# SOURCES
+#
+	function SourceMenu
+	{
+	  SplashScreen
+	  echo
+	  echo " What would you like to build from source?"
+	  echo
+	  echo "  1) $GBSOURCE"
+	  echo "  2) $ICSSOURCE"
+	  echo "  3) $CMSOURCE"
+	  echo "  4) $OxGBSOURCE"
+	  echo "  5) $AOKPSOURCE"
+	  echo "  6) $OxICSSOURCE"
+	  echo "  7) $MIUISOURCE"
+	  echo "  8) $CNASOURCE"
+	  echo
+	  echo " MAKE SURE YOU HAVE AT LEAST 20GB OF FREE SPACE"
+	  echo
+	  echo
+	  echo -n "  Enter option:  "
+	  read opt
+	   echo
+	   echo "This can take a LONG while. Sit back and take a beer ;)"
+		case $opt in
+			1) Name="GB";;
+			2) Name="ICS";;
+			3) Name="CM7";;
+			4) Name="Ox";;
+			5) Name="AOKP";;
+			7) Name="Miui";;
+			8) Name="CNA";;
+		esac
+	   Source $opt
+
+	  echo "Done!"
+	}
+
+	function Source
+	{
+	SourceDir="~/WORKING_DIR_$Name"
+	SourceDir=$(eval "echo $SourceDir")
+	if ! [ -d $SourceDir ]
+	then
+		mkdir $SourceDir
+	fi
+	cd $SourceDir
+	if ! [ -d $SourceDir/.repo ]
+	then
+	   case $1 in
+		1) GBSOURCE;;
+		2) ICSSOURCE;;
+		3) CMSOURCE;;
+		4) OxGBSOURCE;;
+		5) AOKPSOURCE;;
+	#	6) OxICSSOURCE;;
+	#	7) MiuiSource;;
+		8) CnaSource;;
+	#	9) CAFSOURCE;;
+		*) InvOpt;;
+	    esac
+	fi
+	#repo sync -f
+	SplashScreen
+	echo "Devices available: "
+	echo
+	typeset -i i=0
+	rm devices
+	touch devices
+	VendorSetup=$(find $SourceDir/vendor -name vendorsetup.sh)
+	for File in $(cat $VendorSetup)
+	do
+		if [ "$File" != "add_lunch_combo" ]
+		then
+			DispDevice=${File##*" "}
+			echo $DispDevice >> devices
+		fi
+	done
+	for Device in $(find $SourceDir/device -name vendorsetup.sh)
+	do
+		File=$(tail -1 $Device)
+		DispDevice=${File##*" "}
+		echo $DispDevice >> devices
+	done
+	for Device in $(cat devices)
+	do
+		i=i+1
+		echo "$i) $Device"
+	done
+	echo
+	echo -n "Please choose a device:  "
+	read opt
+	. build/envsetup.sh > /dev/null
+	SetDevice="$"$opt
+	Device=$(cat devices)
+	set $Device
+	Device=$(eval "echo $SetDevice")
+	cd $SourceDir
+	lunch $Device && make droid
+	}
+
+
+	ICSSOURCE="Stock AOSP ICS Source"
+
+# ^^ Is the value that will be displayed in menu
+
+	function ICSSOURCE
+	{
+	repo init -u https://android.googlesource.com/platform/manifest -b android-4.0.1_r1
+	}
+
+# ^^ That are the commands that will be executed when option is chosen
+# Change the "repo init -u" to the one who ported the ROM to your device or stock
+
+	GBSOURCE="Stock AOSP GB Source"
+
+	function GBSOURCE
+	{
+	repo init -u https://android.googlesource.com/platform/manifest -b android-2.3.7_r1
+	}
+
+	CMSOURCE="Official CyanogenMod7 Source"
+
+	function CMSOURCE
+	{
+	repo init -u git://github.com/CyanogenMod/android.git -b gingerbread
+	}
+
+	OxGBSOURCE="Popdog123 Oxygen source"
+
+	function OxGBSOURCE
+	{
+	repo init -u git://github.com/popdog123/android_manifest.git -b gingerbread
+	}
+
+	AOKPSOURCE="Android Open Kang SOURCE"
+
+	function AOKPSOURCE
+	{
+	repo init -u https://github.com/AOKP/platform_manifest.git -b master
+	}
+
+	OxICSSOURCE="[UNAVAILABLE] Oxygen ICS Source"
+
+	function OxICSSOURCE
+	{
+	InvOpt
+	#repo init -u
+	}
+	
+	MIUISOURCE="MIUI PatchROM"
+	
+	function MiuiSource
+	{
+	repo init -u git://github.com/MiCode/patchrom.git
+	}
+
+	CNASOURCE="CodeName Android Source (ICS)"
+	function CnaSource
+	{
+	repo init -u git://github.com/CNA/android_manifest.git -b mod-4.0.3
+	}
+	
+	CAFSOURCE="Code Aurora Source"
+	function CAFSOURCE
+	{
+	InvOpt
+	}
+
+

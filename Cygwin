@@ -1,0 +1,82 @@
+#!/bin/bash
+function Menu
+{
+while :
+do
+	clear
+	SplashScreen
+	echo -e "\e[40;36m   #####################               #####################"
+	echo -e "   #   Utils:          #               #   Develop:        #"
+	echo -e "   #####################               #####################\e[00;40m"
+	echo "   Cl) Clean the workspace               6) Prepare building"
+	echo "    1) Install Utilities                 7) Build from source"
+	echo "    2) CopieFrom                         8) Build Kernel"
+	echo "    3) Resize pictures                   -) Add governor"
+	echo "    4) Batch theme                      10) Switch Build-MODE"
+	echo "    5) Optimize images                  11) Install the Android SDK!"
+	echo "                                        12) Install the Java JDK!"
+	echo -e "\e[40;36m   #####################"
+	echo -e "   #   APK:            #"
+	echo -e "   #####################\e[00;40m"
+	echo "   13) (De)compile APK"
+	echo "   14) Extract/Repackage"
+	echo "   15) Sign APK"
+	echo "   16) Zipalign APK"
+	echo "   17) Compile, Zip, Sign"
+	echo "   18) Install APK"
+	echo "   "
+	echo ""
+	echo -e "\e[40;36m   ####################                #####################                ####################"
+	echo -e "   #   Advanced:      #                #                   #                #   Other:         #"
+	echo -e "   ####################                #####################                ####################\e[00;40m"
+	echo "    19) Smali                                                                 l) Check the log!"
+	echo "    20) Baksmali                                                              c) Changelog"
+	echo "     -) ODEX                                                                  h) Help! What do I do?"
+	echo "    22) DE-ODEX                                                               u) Update"
+	echo "    23) Aroma Menu                                                            b) BetaInstaller"
+	echo "                                                                              x) Exit"
+	echo 
+	echo -n -e "\e[40;36m   Enter option: \e[00;40m"
+ if [ "$2" != "" ]
+ then
+	opt=$2
+ else
+ 	read opt
+ fi
+ MenuOpt="$opt"
+
+
+ case $opt in
+	6) clear;;
+	1) Utils;;
+	2) CopyFrom;;
+	3) Resize;;
+	4) Theme;;
+	5) Optimize;;
+	7) SourceMenu;;
+	8) KernelMenu;;
+	10) SwitchBuild;;
+	11) SDKInstaller;;
+	12) JDKInstaller;;
+	13) DeCompile;;
+	14) ExPackage;;
+	15) Sign;;
+	16) Zipalign;;
+	17) Compile; Zipalign; Sign;;
+	18) Install;;
+	19) Smali;;
+	20) Baksmali;;
+	22) Deodex;;
+	23) AromaMenu;;
+	Cl) rm -r $ScriptDir/Theme $ScriptDir/APK $ScriptDir/Advance $ScriptDir/LatestOutput ~/bin/SA $ScriptDir/log;;
+	l) gedit $ScriptDir/$LogFile;;
+	w) SplashScreen; xdg-open 'http://forum.xda-developers.com/donatetome.php?u=4234443' 2> /dev/null; clear; Restart;;
+	c) cat $ScriptDir/changelog; echo; echo "Press ENTER"; read line; Restart;;
+	h) Help; exit;;
+	u) $ScriptDir/ACI; exit;;
+	x) echo -e "\e[00m"; SplashScreen;  exit 1;;
+	b) BetaInstaller;;
+	*) InvOpt;;
+ esac
+done
+}
