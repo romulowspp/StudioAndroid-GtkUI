@@ -483,18 +483,6 @@ def Resize():
 				InRes = '320'
 			elif InDPI == 'LDPI':
 				InRes = '240'
-			else:
-				InRes = InDPI
-			if OutDPI == 'XHDPI':
-				OutRes = '720'
-			elif OutDPI == 'HDPI':
-				OutRes = '480'
-			elif OutDPI == 'MDPI':
-				OutRes = '320'
-			elif OutDPI == 'LDPI':
-				OutRes = '240'
-			else:
-				ResDPI = OutDPI
 	window.remove(MainApp.table)
 	ResizeWindow = window
 	ResizeWindow.set_title("StudioAndroid - Resize")
