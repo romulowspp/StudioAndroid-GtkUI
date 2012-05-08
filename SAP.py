@@ -16,12 +16,12 @@ import zipfile
 
 Opt5="EMPTY"
 Web = webbrowser.get()
-if not sys.platform == "linux2":
-	print("Platform is not linux2...\nCould you PM me the next output??")
-	print sys.platform
-	W = 'true'
-elif sys.platform == 'linux2':
-	W = 'false'
+if sys.platform == 'linux2':
+	OS = 'Lin'
+elif sys.platform == 'win32':
+	OS = 'Win'
+else:
+	print("Your OS is not Windows32 and not Linux2, could you PM me the next output?\n\n\n" + sys.platform)
 
 def delete_event(self, widget, event, data=None):
 	gtk.main_quit()

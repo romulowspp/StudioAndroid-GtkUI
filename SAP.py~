@@ -302,7 +302,6 @@ def Utils():
 		button7.set_active(True)
 		button8.set_active(True)
 		button10.set_active(True)
-		button11.set_active(True)
 	
 	def Install(cmd):
 		os.system("mkdir -p " + Home + "/bin")
