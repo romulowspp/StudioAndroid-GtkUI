@@ -81,12 +81,20 @@ hbox = gtk.HBox(False, 5)
 ScriptDir=os.path.dirname(sys.argv[0])
 Home=os.path.expanduser('~')
 
+print("OS = " + OS)
+print("ScriptDir = " + ScriptDir)
+print("Home = " + Home)
+
 
 
 
 class MainApp():
-	Icon = "images/icon.png"
-	placeIcon = gtk.gdk.pixbuf_new_from_file(ScriptDir + "/images/icon.png")
+	if OS == 'Win':
+		Icon = "\images\icon.png"
+	else:
+		Icon = "/images/icon.png"
+
+	placeIcon = gtk.gdk.pixbuf_new_from_file(ScriptDir + Icon)
 	window.set_icon(placeIcon)
 
 	#
@@ -304,38 +312,51 @@ def Utils():
 		button10.set_active(True)
 	
 	def Install(cmd):
-		os.system("mkdir -p " + Home + "/bin")
-		if button1.get_active():
-			shutil.copy(ScriptDir + "/Utils/adb", Home + "/bin/")
-		if button2.get_active():
-			shutil.copy(ScriptDir + "/Utils/aapt", Home + "/bin")
-		if button3.get_active():
-			shutil.copy(ScriptDir + "/Utils/7za", Home + "/bin")
-		if button4.get_active(): 
-			os.system("mkdir -p " + Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/Script.sh", Home + "/bin")
-			shutil.copy(ScriptDir + "/Utils/apktool.jar", Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/apktool", Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/7za", Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/aapt", Home + "/bin/other")
-			shutil.copy(ScriptDir + "/Utils/optipng", Home + "/bin/other")
-		if button5.get_active():
-			shutil.copy(ScriptDir + "/Utils/optipng", Home + "/bin")
-		if button6.get_active():
-			shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "/bin/")
-			shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "/bin/")
-			shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "/bin/")
-		if button7.get_active():
-			shutil.copy(ScriptDir + "/Utils/smali-1.3.2.jar", Home + "/bin")
-		if button8.get_active():
-			shutil.copy(ScriptDir + "/Utils/baksmali-1.3.2.jar", Home + "/bin")
-		if button10.get_active():
-			if not W == 'true':
+		if OS == 'Lin':
+			os.system("mkdir -p " + Home + "/bin")
+			if button1.get_active():
+				shutil.copy(ScriptDir + "/Utils/adb", Home + "/bin/")
+			if button2.get_active():
+				shutil.copy(ScriptDir + "/Utils/aapt", Home + "/bin")
+			if button3.get_active():
+				shutil.copy(ScriptDir + "/Utils/7za", Home + "/bin")
+			if button4.get_active(): 
+				os.system("mkdir -p " + Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/Script.sh", Home + "/bin")
+				shutil.copy(ScriptDir + "/Utils/apktool.jar", Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/apktool", Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/7za", Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/aapt", Home + "/bin/other")
+				shutil.copy(ScriptDir + "/Utils/optipng", Home + "/bin/other")
+			if button5.get_active():
+				shutil.copy(ScriptDir + "/Utils/optipng", Home + "/bin")
+			if button6.get_active():
+				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "/bin/")
+				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "/bin/")
+				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "/bin/")
+			if button7.get_active():
+				shutil.copy(ScriptDir + "/Utils/smali-1.3.2.jar", Home + "/bin")
+			if button8.get_active():
+				shutil.copy(ScriptDir + "/Utils/baksmali-1.3.2.jar", Home + "/bin")
+			if button10.get_active():
 				os.system("sudo apt-get install imagemagick")
-			else :
+		if OS == 'Win':
+			print("Sorry, windows does not support $PATH modifications from cmd...\nInstead, I will open up a site for you")
+			print("That site contains a HOWTO on adding a directory to the PATH.")
+			print("Add this directory: " + ScriptDir)
+			if button10.get_active():
+				ImageMagick = '[2] Open link and install imagemagick'
+			else:
+				ImageMagick = ''
+
+			print("\n Options: [n] NVM  [1] Open link" + ImageMagick + "\n")
+			q = raw_input("Choose an option :  ")
+			if not q == 'n':
+				Web.open("http://www.computerhope.com/issues/ch000549.htm")
+			if q == '2':
 				Web.open("ftp://ftp.imagemagick.org/pub/ImageMagick/binaries/ImageMagick-6.7.6-9-Q16-windows-dll.exe")
 
 
