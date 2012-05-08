@@ -340,7 +340,7 @@ def Utils():
 				Web.open("ftp://ftp.imagemagick.org/pub/ImageMagick/binaries/ImageMagick-6.7.6-9-Q16-windows-dll.exe")
 
 
-	zipfile.ZipFile(ScriptDir + "/Utils.zip").extractall()
+	zipfile.ZipFile(ScriptDIr + "/Utils.zip").extractall()
 	window.remove(MainApp.table)
 	UtilsWindow = window
 	UtilsWindow.set_title("StudioAndroid - Install Utilities")
