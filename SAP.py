@@ -542,7 +542,11 @@ def Resize():
 				OutRes = 240
 			else:
 				OutRes = OutDPI
-			InDir = ApkResizeDirBox.get_text()
+			InApk = ApkResizeDirBox.get_text()
+			ResizeApk = ApkResizeDirBox.get_text()
+			FullZipDir = ScriptDir + "/Resizing"
+			zipfile.ZipFile(ResizeApk).extractall(path=FullZipDir)
+			InDir = ScriptDir + "/Resizing"
 
 		if ApkResize.get_active() or EasyResize.get_active():
 			Perc = OutRes * 100 / InRes
@@ -565,8 +569,8 @@ def Resize():
 			Name = os.path.basename(Image)
 			Sub = Image.replace(SrcDir, '')
 			SubD = Sub.replace(Name, '')
-			SubDir = SubD.replace('/', '')
-			if not SubDir == '':
+			SubDir = SubD
+			if not SubDir == '' or SubDir == '/':
 				os.system("mkdir -p " + DstDir + SubDir)
 			print(Image + " -> " + DstFile + "\n")
 			os.system("convert " + Image + " -resize %s " + DstFile) % Perc
