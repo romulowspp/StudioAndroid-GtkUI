@@ -1,5 +1,7 @@
-# example helloworld2.py
 
+
+# IMPORTS
+from __future__ import division
 import os
 import fnmatch
 import webbrowser
@@ -13,6 +15,7 @@ import gobject
 import shutil
 import signal
 import zipfile
+
 
 Opt5="EMPTY"
 Web = webbrowser.get()
@@ -351,7 +354,6 @@ def Utils():
 				ImageMagick = '[2] Open link and install imagemagick'
 			else:
 				ImageMagick = ''
-
 			print("\n Options: [n] NVM  [1] Open link" + ImageMagick + "\n")
 			q = raw_input("Choose an option :  ")
 			if not q == 'n':
@@ -494,27 +496,79 @@ def Resize():
 			InDir = ResizeDirBox.get_text()
 		if EasyResize.get_active():
 			InDPI = InDPIBox.get_text()
-			OutDPI = OutDPIBox-get_text()
+			OutDPI = OutDPIBox.get_text()
 			if InDPI == 'XHDPI':
-				InRes = '720'
+				InRes = 720
 			elif InDPI == 'HDPI':
-				InRes = '480'
+				InRes = 480
 			elif InDPI == 'MDPI':
-				InRes = '320'
+				InRes = 320
 			elif InDPI == 'LDPI':
-				InRes = '240'
+				InRes = 240
 			else:
 				InRes = InDPI
 			if OutDPI == 'XHDPI':
-				OutRes = '720'
+				OutRes = 720
 			elif OutDPI == 'HDPI':
-				OutRes = '480'
+				OutRes = 480
 			elif OutDPI == 'MDPI':
-				OutRes = '320'
+				OutRes = 320
 			elif OutDPI == 'LDPI':
-				OutRes = '240'
+				OutRes = 240
 			else:
 				ResDPI = OutDPI
+			InDir = EasyResizeDirBox.get_text()
+
+		if ApkResize.get_active():
+			InDPI = ApkInDPIBox.get_text()
+			OutDPI = ApkOutDPIBox.get_text()
+			if InDPI == 'XHDPI':
+				InRes = 720
+			elif InDPI == 'HDPI':
+				InRes = 480
+			elif InDPI == 'MDPI':
+				InRes = 320
+			elif InDPI == 'LDPI':
+				InRes = 240
+			else:
+				InRes = InDPI
+			if OutDPI == 'XHDPI':
+				OutRes = 720
+			elif OutDPI == 'HDPI':
+				OutRes = 480
+			elif OutDPI == 'MDPI':
+				OutRes = 320
+			elif OutDPI == 'LDPI':
+				OutRes = 240
+			else:
+				OutRes = OutDPI
+			InDir = ApkResizeDirBox.get_text()
+
+		if ApkResize.get_active() or EasyResize.get_active():
+			Perc = OutRes * 100 / InRes
+
+		print "Resize percentage is",
+		print Perc
+
+		os.system("mkdir -p " + ScriptDir + "/Resized")
+		DstDir = ScriptDir + "/Resized/"
+		SrcDir = InDir
+		print("SrcDir = " + SrcDir + "\nDstDir = " + DstDir)
+
+		for Image in find_files(SrcDir, "*.png"):
+			if not Image = *"Resized"*:
+				DstFile = Image.replace(SrcDir, DstDir)
+				Name = os.path.basename(Image)
+				Sub = Image.replace(SrcDir, '')
+				SubD = Sub.replace(Name, '')
+				SubDir = SubD.replace('/', '')
+				if not SubDir == '':
+					print(DstDir + SubDir)
+					os.system("mkdir -p " + DstDir + SubDir)
+				print(Image + " -> " + DstFile + "\n")
+				os.system("convert " + Image + " -resize %s " + DstFile) % Perc
+		
+		
 	window.remove(MainApp.table)
 	ResizeWindow = window
 	ResizeWindow.set_title("StudioAndroid - Resize")
@@ -566,10 +620,10 @@ def Resize():
 	OutDPILabel = gtk.Label("Give the DPI of the resolution you want to resize to")
 	EasyResizeTable.attach(OutDPILabel, 1, 2, 1, 2)
 
-	ResizeDirBox = gtk.Entry()
-	ResizeDirBox.set_text(ScriptDir + "/")
-	ResizeDirBox.set_size_request(0, 30)
-	EasyResizeTable.attach(ResizeDirBox, 0, 1, 2, 3, xpadding=20)
+	EasyResizeDirBox = gtk.Entry()
+	EasyResizeDirBox.set_text(ScriptDir + "/")
+	EasyResizeDirBox.set_size_request(0, 30)
+	EasyResizeTable.attach(EasyResizeDirBox, 0, 1, 2, 3, xpadding=20)
 	ResizeDirLabel = gtk.Label("Enter the directory containing the images you want to resize")
 	EasyResizeTable.attach(ResizeDirLabel, 1, 2, 2, 3)
 
@@ -578,28 +632,33 @@ def Resize():
 	ApkResize = gtk.RadioButton(NormalResize, "Resize an APK using DPI values")
 	vbox.pack_start(ApkResize, False, False, 10)
 
-	APKResizeTable = gtk.Table(2, 2, True)
+	APKResizeTable = gtk.Table(3, 2, True)
 	
-	InDPIBox = gtk.Entry()
-	InDPIBox.set_text("..DPI")
-	APKResizeTable.attach(InDPIBox, 0, 1, 0, 1, xpadding=20)
-	InDPILabel = gtk.Label("Give the DPI of the images you want to resize")
-	APKResizeTable.attach(InDPILabel, 1, 2, 0, 1)
+	ApkInDPIBox = gtk.Entry()
+	ApkInDPIBox.set_text("..DPI")
+	APKResizeTable.attach(ApkInDPIBox, 0, 1, 0, 1, xpadding=20)
+	ApkInDPILabel = gtk.Label("Give the DPI of the images you want to resize")
+	APKResizeTable.attach(ApkInDPILabel, 1, 2, 0, 1)
 
-	OutDPIBox = gtk.Entry()
-	OutDPIBox.set_text("..DPI")
-	APKResizeTable.attach(OutDPIBox, 0, 1, 1, 2, xpadding=20)
-	OutDPILabel = gtk.Label("Give the DPI of the resolution you want to resize to")
-	APKResizeTable.attach(OutDPILabel, 1, 2, 1, 2)
+	ApkOutDPIBox = gtk.Entry()
+	ApkOutDPIBox.set_text("..DPI")
+	APKResizeTable.attach(ApkOutDPIBox, 0, 1, 1, 2, xpadding=20)
+	ApkOutDPILabel = gtk.Label("Give the DPI of the resolution you want to resize to")
+	APKResizeTable.attach(ApkOutDPILabel, 1, 2, 1, 2)
 
-	ResizeDirBox = gtk.Entry()
-	ResizeDirBox.set_text(ScriptDir + "/")
-	ResizeDirBox.set_size_request(0, 30)
-	APKResizeTable.attach(ResizeDirBox, 0, 1, 2, 3, xpadding=20)
+	ApkResizeDirBox = gtk.Entry()
+	ApkResizeDirBox.set_text(ScriptDir + "/")
+	ApkResizeDirBox.set_size_request(0, 30)
+	APKResizeTable.attach(ApkResizeDirBox, 0, 1, 2, 3, xpadding=20)
 	ResizeDirLabel = gtk.Label("Enter the directory containing the APK")
 	APKResizeTable.attach(ResizeDirLabel, 1, 2, 2, 3)
 
 	vbox.pack_start(APKResizeTable, False, False, 0)
+
+	ExtensionBox = gtk.Entry()
+	ExtensionBox.set_size_request(0, 30)
+	ExtensionBox.set_text(".png")
+	APKResizeTable.attach(ExtensionBox, 0, 1, 3, 4, xpadding=10)
 
 	ResizeStartButton = gtk.Button("Start resizing")
 	ResizeStartButton.connect("clicked", StartResize)
