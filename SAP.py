@@ -547,26 +547,29 @@ def Resize():
 		if ApkResize.get_active() or EasyResize.get_active():
 			Perc = OutRes * 100 / InRes
 
+
 		print "Resize percentage is",
 		print Perc
 
 		os.system("mkdir -p " + ScriptDir + "/Resized")
 		DstDir = ScriptDir + "/Resized/"
-		SrcDir = InDir
+		if not InDir.endswith("/"):
+			SrcDir = InDir + "/"
+		else:
+			SrcDir = InDir
+
 		print("SrcDir = " + SrcDir + "\nDstDir = " + DstDir)
 
 		for Image in find_files(SrcDir, "*.png"):
-			if not Image == *"Resized"*:
-				DstFile = Image.replace(SrcDir, DstDir)
-				Name = os.path.basename(Image)
-				Sub = Image.replace(SrcDir, '')
-				SubD = Sub.replace(Name, '')
-				SubDir = SubD.replace('/', '')
-				if not SubDir == '':
-					print(DstDir + SubDir)
-					os.system("mkdir -p " + DstDir + SubDir)
-				print(Image + " -> " + DstFile + "\n")
-				os.system("convert " + Image + " -resize %s " + DstFile) % Perc
+			DstFile = Image.replace(SrcDir, DstDir)
+			Name = os.path.basename(Image)
+			Sub = Image.replace(SrcDir, '')
+			SubD = Sub.replace(Name, '')
+			SubDir = SubD.replace('/', '')
+			if not SubDir == '':
+				os.system("mkdir -p " + DstDir + SubDir)
+			print(Image + " -> " + DstFile + "\n")
+			os.system("convert " + Image + " -resize %s " + DstFile) % Perc
 		
 		
 	window.remove(MainApp.table)
