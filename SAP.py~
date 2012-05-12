@@ -556,7 +556,7 @@ def Resize():
 		print("SrcDir = " + SrcDir + "\nDstDir = " + DstDir)
 
 		for Image in find_files(SrcDir, "*.png"):
-			if not Image == *"Resized"*:
+			if not Image = *"Resized"*:
 				DstFile = Image.replace(SrcDir, DstDir)
 				Name = os.path.basename(Image)
 				Sub = Image.replace(SrcDir, '')
