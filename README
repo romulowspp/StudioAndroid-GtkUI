@@ -11,8 +11,8 @@ If you have some free time, please suggest some ideas!
 
 Run the SAP script.
 The way you do this depends on your OS.
--Ubuntu: double-click SAP
--Windows: Right-click SAP.bat, "Open with cmd"
+-Ubuntu: double-click SAP, and click "Run in Terminal"
+-Windows: Right-click SAP.py, Open WIth > Python
 -Mac OS X: Drag SAP into a terminal
 
 
