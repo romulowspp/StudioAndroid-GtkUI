@@ -53,10 +53,13 @@ def callback(widget, option):
 	elif option == 'upd':
 		Update()
 	else :
-		print('"' + option + '"' + " is the command...")
-		Run = raw_input("Do you want to run the command in the terminal with normal usage?  [Y/n]")
-		if not Run == 'n' :
-			os.system("./Script " + option)
+		if OS == 'Lin':
+			print('"' + option + '"' + " is the command...")
+			Run = raw_input("Do you want to run the command in the terminal with normal usage?  [Y/n]")
+			if not Run == 'n' :
+				os.system("./Script " + option)
+		else :
+			print("This option is not defined yet, SORRY!")
 def Restart(cmd):
 	python = sys.executable
 	os.execl(python, python, * sys.argv)
@@ -491,6 +494,7 @@ def CopyFrom():
 
 def Resize():
 	def StartResize(cmd):
+		DstDir = ScriptDir + "/Resized/"
 		if NormalResize.get_active():
 			Perc = ResizePercentageBox.get_text()
 			InDir = ResizeDirBox.get_text()
@@ -524,29 +528,38 @@ def Resize():
 			OutDPI = ApkOutDPIBox.get_text()
 			if InDPI == 'XHDPI':
 				InRes = 720
+				InDir1 = 'xhdpi'
 			elif InDPI == 'HDPI':
 				InRes = 480
+				InDir1 = 'hdpi'
 			elif InDPI == 'MDPI':
 				InRes = 320
+				InDir1 = 'mdpi'
 			elif InDPI == 'LDPI':
 				InRes = 240
+				InDir1 = 'ldpi'
 			else:
 				InRes = InDPI
 			if OutDPI == 'XHDPI':
 				OutRes = 720
+				OutDir1 = 'xhdpi'
 			elif OutDPI == 'HDPI':
 				OutRes = 480
+				OutDir1 = 'hdpi'
 			elif OutDPI == 'MDPI':
 				OutRes = 320
+				OutDir1 = 'mdpi'
 			elif OutDPI == 'LDPI':
 				OutRes = 240
+				OutDir1 = 'ldpi'
 			else:
 				OutRes = OutDPI
 			InApk = ApkResizeDirBox.get_text()
 			ResizeApk = ApkResizeDirBox.get_text()
 			FullZipDir = ScriptDir + "/Resizing"
 			zipfile.ZipFile(ResizeApk).extractall(path=FullZipDir)
-			InDir = ScriptDir + "/Resizing"
+			InDir = ScriptDir + "/Resizing/res/drawable-" + InDir1
+			DstDir = ScriptDir + "/Resizing/res/drawable-" + OutDir1 + "/"
 
 		if ApkResize.get_active() or EasyResize.get_active():
 			Perc = OutRes * 100 / InRes
@@ -555,8 +568,8 @@ def Resize():
 		print "Resize percentage is",
 		print Perc
 
-		os.system("mkdir -p " + ScriptDir + "/Resized")
-		DstDir = ScriptDir + "/Resized/"
+		os.system("rm -r " + DstDir)
+		os.system("mkdir -p " + DstDir)
 		if not InDir.endswith("/"):
 			SrcDir = InDir + "/"
 		else:
@@ -674,6 +687,9 @@ def Resize():
 	vbox.pack_end(StatusTable, False, False, 0)
 
 	ResizeWindow.show_all()
+
+def Theme():
+	print "HEY"
 	
 
 def PrepareBuilding():
