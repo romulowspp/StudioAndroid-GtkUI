@@ -44,6 +44,8 @@ def callback(widget, option):
 		CopyFrom()
 	elif option == '3':
 		Resize()
+	elif option == '4':
+		Theme()
 	elif option == '6':
 		PrepareBuilding()
 	elif option == 'change':
@@ -129,152 +131,149 @@ class MainApp():
         notebook.show()
 
 	# UTIL TABLE
+	UtilVBox = gtk.VBox()
 
-	UtilTable = gtk.Table(8, 1, False)
 	UtilLabel = gtk.Label("Utilities")
 
 	image = gtk.Image()
 	image.set_from_file("images/Utils.png")
 	image.show()
-	UtilTable.attach(image, 0, 1, 0, 1, yoptions=gtk.EXPAND)
+	UtilVBox.pack_start(image)
 
 	MainOptCl = gtk.Button("Clean Workspace")
 	MainOptCl.connect("clicked", callback, "Cl")
-	UtilTable.attach(MainOptCl, 0, 1, 1, 2, yoptions=gtk.EXPAND)
+	UtilVBox.pack_start(MainOptCl, False, False, 10)
 
 	MainOpt1 = gtk.Button("Install Utilities")
 	MainOpt1.connect("clicked", callback, "1")
-	UtilTable.attach(MainOpt1, 0, 1, 2, 3, yoptions=gtk.EXPAND)
+	UtilVBox.pack_start(MainOpt1, False, False, 10)
 
 	MainOpt2 = gtk.Button("CopieFrom")
 	MainOpt2.connect("clicked", callback, "2")
-	UtilTable.attach(MainOpt2, 0, 1, 3, 4, yoptions=gtk.EXPAND)
+	UtilVBox.pack_start(MainOpt2, False, False, 10)
 
 	MainOpt3 = gtk.Button("Resize")
 	MainOpt3.connect("clicked", callback, "3")
-	UtilTable.attach(MainOpt3, 0, 1, 4, 5, yoptions=gtk.EXPAND)
+	UtilVBox.pack_start(MainOpt3, False, False, 10)
 
 	MainOpt4 = gtk.Button("Batch Theme")
 	MainOpt4.connect("clicked", callback, "4")
-	UtilTable.attach(MainOpt4, 0, 1, 5, 6, yoptions=gtk.EXPAND)
+	UtilVBox.pack_start(MainOpt4, False, False, 10)
 
 	MainOpt5 = gtk.Button("Optimize Images")
 	MainOpt5.connect("clicked", callback, "5")
-	UtilTable.attach(MainOpt5, 0, 1, 6, 7, yoptions=gtk.EXPAND)
+	UtilVBox.pack_start(MainOpt5, False, False, 10)
 
-	notebook.insert_page(UtilTable, UtilLabel, 1)
-	UtilTable.show()
+	notebook.insert_page(UtilVBox, UtilLabel, 1)
 
 	# DEVELOP TABLE
 
 	DevelopTable = gtk.Table(8, 1, False)
 	DevelopLabel = gtk.Label("Development")
+	DevelopVBox = gtk.VBox()
 
 	image = gtk.Image()
 	image.set_from_file("images/Develop.png")
 	image.show()
-	DevelopTable.attach(image, 0, 1, 0, 1, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(image)
 
 	MainOpt6 = gtk.Button("Prepare Building")
 	MainOpt6.connect("clicked", callback, "6")
-	DevelopTable.attach(MainOpt6, 0, 1, 1, 2, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(MainOpt6, False, False, 10)
 
 	MainOpt7 = gtk.Button("Build from Source")
 	MainOpt7.connect("clicked", callback, "7")
-	DevelopTable.attach(MainOpt7, 0, 1, 2, 3, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(MainOpt7, False, False, 10)
 
 	MainOpt8 = gtk.Button("Build Kernel")
 	MainOpt8.connect("clicked", callback, "8")
-	DevelopTable.attach(MainOpt8, 0, 1, 3, 4, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(MainOpt8, False, False, 10)
 
 	MainOpt9 = gtk.Button("Add Governor")
 	#MainOpt9.connect("clicked", self.callback, "Build Kernel")
-	DevelopTable.attach(MainOpt9, 0, 1, 4, 5, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(MainOpt9, False, False, 10)
 
 	MainOpt10 = gtk.Button("Switch Build-Mode")
 	MainOpt10.connect("clicked", callback, "10")
-	DevelopTable.attach(MainOpt10, 0, 1, 5, 6, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(MainOpt10, False, False, 10)
 
 	MainOpt11 = gtk.Button("Install Android-SDK")
 	MainOpt11.connect("clicked", callback, "11")
-	DevelopTable.attach(MainOpt11, 0, 1, 6, 7, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(MainOpt11, False, False, 10)
 
 	MainOpt12 = gtk.Button("Install Java JDK")
 	MainOpt12.connect("clicked", callback, "12")
-	DevelopTable.attach(MainOpt12, 0, 1, 7, 8, yoptions=gtk.EXPAND)
+	DevelopVBox.pack_start(MainOpt12, False, False, 10)
 
-	notebook.insert_page(DevelopTable, DevelopLabel, 2)
-	DevelopTable.show()
+	notebook.insert_page(DevelopVBox, DevelopLabel, 2)
 
 	# APK TABLE
 
-	ApkTable = gtk.Table(8, 1, False)
 	ApkLabel = gtk.Label("APK")
+	APKVBox = gtk.VBox()
 
 	image = gtk.Image()
 	image.set_from_file("images/APK.png")
 	image.show()
-	ApkTable.attach(image, 0, 1, 0, 1, yoptions=gtk.EXPAND)
+	APKVBox.pack_start(image, False, False, 10)
 
 	MainOpt13 = gtk.Button("(De)Compile")
 	MainOpt13.connect("clicked", callback, "13")
-	ApkTable.attach(MainOpt13, 0, 1, 1, 2, yoptions=gtk.EXPAND)
+	APKVBox.pack_start(MainOpt13, False, False, 10)
 
 	MainOpt14 = gtk.Button("Extract/Repackage")
 	MainOpt14.connect("clicked", callback, "14")
-	ApkTable.attach(MainOpt14, 0, 1, 2, 3, yoptions=gtk.EXPAND)
+	APKVBox.pack_start(MainOpt14, False, False, 10)
 
 	MainOpt15 = gtk.Button("Sign APK")
 	MainOpt15.connect("clicked", callback, "15")
-	ApkTable.attach(MainOpt15, 0, 1, 3, 4, yoptions=gtk.EXPAND)
+	APKVBox.pack_start(MainOpt15, False, False, 10)
 
 	MainOpt16 = gtk.Button("Zipalign APK")
 	MainOpt16.connect("clicked", callback, "16")
-	ApkTable.attach(MainOpt16, 0, 1, 4, 5, yoptions=gtk.EXPAND)
+	APKVBox.pack_start(MainOpt16, False, False, 10)
 
 	MainOpt17 = gtk.Button("Compile, Zip, Sign")
 	MainOpt17.connect("clicked", callback, "17")
-	ApkTable.attach(MainOpt17, 0, 1, 5, 6, yoptions=gtk.EXPAND)
+	APKVBox.pack_start(MainOpt17, False, False, 10)
 
 	MainOpt18 = gtk.Button("Install APK")
 	MainOpt18.connect("clicked", callback, "18")
-	ApkTable.attach(MainOpt18, 0, 1, 6, 7, yoptions=gtk.EXPAND)
+	APKVBox.pack_start(MainOpt18, False, False, 10)
 
-	notebook.insert_page(ApkTable, ApkLabel, 3)
-	ApkTable.show()
+	notebook.insert_page(APKVBox, ApkLabel, 3)
 
 	# ADVANCE TABLE
 
-	AdvanceTable = gtk.Table(8, 1, False)
+	AdvanceVBox = gtk.VBox()
 	AdvanceLabel = gtk.Label("Advanced")
 
 	image = gtk.Image()
 	image.set_from_file("images/Advanced.png")
 	image.show()
-	AdvanceTable.attach(image, 0, 1, 0, 1, yoptions=gtk.EXPAND)
+	AdvanceVBox.pack_start(image)
 
 	MainOpt19 = gtk.Button("Smali")
 	MainOpt19.connect("clicked", callback, "19")
-	AdvanceTable.attach(MainOpt19, 0, 1, 1, 2, yoptions=gtk.EXPAND)
+	AdvanceVBox.pack_start(MainOpt19, False, False, 10)
 
 	MainOpt20 = gtk.Button("BakSmali")
 	MainOpt20.connect("clicked", callback, "20")
-	AdvanceTable.attach(MainOpt20, 0, 1, 2, 3, yoptions=gtk.EXPAND)
+	AdvanceVBox.pack_start(MainOpt20, False, False, 10)
 
 	MainOpt21 = gtk.Button("ODEX")
 	#MainOpt21.connect("clicked", callback, "ODEX")
-	AdvanceTable.attach(MainOpt21, 0, 1, 3, 4, yoptions=gtk.EXPAND)
+	AdvanceVBox.pack_start(MainOpt21, False, False, 10)
 
 	MainOpt22 = gtk.Button("DE-ODEX")
 	MainOpt22.connect("clicked", callback, "22")
-	AdvanceTable.attach(MainOpt22, 0, 1, 4, 5, yoptions=gtk.EXPAND)
+	AdvanceVBox.pack_start(MainOpt22, False, False, 10)
 
 	MainOpt23 = gtk.Button("Aroma Menu")
 	MainOpt23.connect("clicked", callback, "23")
-	AdvanceTable.attach(MainOpt23, 0, 1, 5, 6, yoptions=gtk.EXPAND)
+	AdvanceVBox.pack_start(MainOpt23, False, False, 10)
 
-	notebook.insert_page(AdvanceTable, AdvanceLabel, 4)
-	AdvanceTable.show()
+	notebook.insert_page(AdvanceVBox, AdvanceLabel, 4)
 
 	# EMPTY TABLE
 
@@ -711,7 +710,26 @@ def Resize():
 	ResizeWindow.show_all()
 
 def Theme():
-	print "HEY"
+	ThemeWindow = window
+	notebook = MainApp.notebook
+
+	vbox = gtk.VBox()
+	ThemeLabel = gtk.Label("Theme")
+	
+	notebook.insert_page(vbox, ThemeLabel, 5)
+	notebook.set_current_page(5)
+
+	Icon = "/images/icon.png"
+	Image = gtk.Image()
+	Image.set_from_stock(gtk.STOCK_STOP, gtk.ICON_SIZE_DIALOG)
+	hbox = gtk.HBox()
+	hbox.pack_start(Image)
+	hbox.pack_start(ThemeLabel)
+	Button = gtk.Button()
+	Button.add(hbox)
+	vbox.pack_start(Button, False, False, 0)
+
+	ThemeWindow.show_all()
 	
 
 def PrepareBuilding():
