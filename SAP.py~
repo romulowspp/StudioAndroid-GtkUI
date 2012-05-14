@@ -67,7 +67,7 @@ def Restart(cmd):
 def KillPage():
 	page = MainApp.notebook.get_current_page()
         MainApp.notebook.remove_page(page)
-        MainApp.notebook.queue_draw_area(0,0,-1,-1)
+        MainApp.notebook.queue_draw_area(0,0,-1,-1
 
 
 def find_files(directory, pattern):
