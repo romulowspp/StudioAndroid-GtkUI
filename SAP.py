@@ -79,6 +79,10 @@ def find_files(directory, pattern):
                 filename = os.path.join(root, basename)
                 yield filename
 
+def ExZip():
+	zipfile.ZipFile(ScriptDir + "/Utils.zip").extractall()
+	os.system("chmod 755 " + ScriptDir + "/Utils/*")
+
 
 window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 window.set_title("StudioAndroid")
@@ -383,7 +387,7 @@ def Utils():
 				Web.open("ftp://ftp.imagemagick.org/pub/ImageMagick/binaries/ImageMagick-6.7.6-9-Q16-windows-dll.exe")
 
 	notebook = MainApp.notebook
-	zipfile.ZipFile(ScriptDir + "/Utils.zip").extractall()
+	ExZip()
 	UtilsLabel = gtk.Label("Install Utilities")
 	InstUtilsTable = gtk.Table(1, 1, False)
 	vbox = gtk.VBox()
@@ -710,24 +714,83 @@ def Resize():
 	ResizeWindow.show_all()
 
 def Theme():
-	ThemeWindow = window
+	def ShowColor(cmd):
+		Red1 = RedBox.get_text()
+		Red2 = int(Red1) * 65535 / 100
+		Red3 = int(Red2)
+		Green1 = GreenBox.get_text()
+		Green2 = int(Green1) * 65535 / 100
+		Green3 = int(Green2)
+		Blue1 = BlueBox.get_text()
+		Blue2 = int(Blue1) * 65535 / 100
+		Blue3 = int(Blue2)
+		Red = int(Red3)
+		Green = int(Green3)
+		Blue = int(Blue3)
+		print("R %s G %s B %s") % (Red, Green, Blue)
+		color = gtk.gdk.Color(red=Red, green=Green, blue=Blue)
+		Draw.modify_bg(gtk.STATE_NORMAL, color)
+	def StartTheming(cmd):
+		Red = str(RedBox.get_text())
+		Green = str(GreenBox.get_text())
+		Blue = str(BlueBox.get_text())
+		ExZip()
+		SrcDir = ScriptDir + "/Theme"
+		os.system("mkdir -p " + SrcDir)
+		for Image in find_files(SrcDir, "*.png"):
+			Image1 = str(Image)
+			os.system("mogrify -colorize " + Red + "," + Green + "," + Blue + " " + Image1)
+	ThemeWindow = window	
+	ThemeLabel = gtk.Label("Place the images you want to theme inside " + ScriptDir + "/Theme/")
 	notebook = MainApp.notebook
 
+	SrcDir = ScriptDir + "/Theme"
+	os.system("mkdir -p " + SrcDir)
+
 	vbox = gtk.VBox()
-	ThemeLabel = gtk.Label("Theme")
+	vbox.pack_start(ThemeLabel, False, False, 10)
+
+	ColorTable = gtk.Table(3, 2, True)
+	vbox.pack_start(ColorTable, False, False, 0)
+
+	RedBox = gtk.Entry()
+	RedBox.set_text("22")
+	RedLabel = gtk.Label("Enter the RED value (0-100)")
+	ColorTable.attach(RedBox, 0, 1, 0, 1)
+	ColorTable.attach(RedLabel, 1, 2, 0, 1)
+
+	GreenBox = gtk.Entry()
+	GreenBox.set_text("66")
+	GreenLabel = gtk.Label("Enter the GREEN value (0-100)")
+	ColorTable.attach(GreenBox, 0, 1, 1, 2)
+	ColorTable.attach(GreenLabel, 1, 2, 1, 2)
+
+	BlueBox = gtk.Entry()
+	BlueBox.set_text("77")
+	BlueLabel = gtk.Label("Enter the BLUE value (0-100)")
+	ColorTable.attach(BlueBox, 0, 1, 2, 3)
+	ColorTable.attach(BlueLabel, 1, 2, 2, 3)
 	
+
+
+	ColorButton = gtk.Button("Show Color")
+	ColorButton.connect("clicked", ShowColor)
+
+	vbox.pack_start(ColorButton, False, False, 15)
+
+	Draw = gtk.DrawingArea()
+	Color = Draw.get_colormap().alloc_color(0, 65535, 0)
+	Draw.set_size_request(100, 50)
+	Draw.show()
+	vbox.pack_start(Draw, False, False, 0)
+
+	StartButton = gtk.Button("Start theming!")
+	StartButton.connect("clicked", StartTheming)
+	vbox.pack_start(StartButton, False, False, 15)
+
+	ThemeLabel = gtk.Label("Theme")
 	notebook.insert_page(vbox, ThemeLabel, 5)
 	notebook.set_current_page(5)
-
-	Icon = "/images/icon.png"
-	Image = gtk.Image()
-	Image.set_from_stock(gtk.STOCK_STOP, gtk.ICON_SIZE_DIALOG)
-	hbox = gtk.HBox()
-	hbox.pack_start(Image)
-	hbox.pack_start(ThemeLabel)
-	Button = gtk.Button()
-	Button.add(hbox)
-	vbox.pack_start(Button, False, False, 0)
 
 	ThemeWindow.show_all()
 	
