@@ -62,14 +62,23 @@ def callback(widget, option):
 				os.system("./Script " + option)
 		else :
 			print("This option is not defined yet, SORRY!")
+
+def NewDialog(Title, Text):
+	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK)
+	dialog.set_markup("<b>%s</b>" % Title)
+	dialog.format_secondary_markup("%s" % Text)
+	dialog.run()
+	dialog.destroy()
+
 def Restart(cmd):
 	python = sys.executable
 	os.execl(python, python, * sys.argv)
 
-def KillPage():
-	page = MainApp.notebook.get_current_page()
-        MainApp.notebook.remove_page(page)
-        MainApp.notebook.queue_draw_area(0,0,-1,-1)
+def KillPage(cmd):
+	notebook = MainApp.notebook
+	page = notebook.get_current_page()
+        notebook.remove_page(page)
+        notebook.queue_draw_area(0,0,-1,-1)
 
 
 def find_files(directory, pattern):
@@ -385,6 +394,7 @@ def Utils():
 				Web.open("http://www.computerhope.com/issues/ch000549.htm")
 			if q == '2':
 				Web.open("ftp://ftp.imagemagick.org/pub/ImageMagick/binaries/ImageMagick-6.7.6-9-Q16-windows-dll.exe")
+		KillPage(cmd)
 
 	notebook = MainApp.notebook
 	ExZip()
@@ -439,11 +449,23 @@ def Utils():
 	vbox.pack_start(UtilsTable, False, False, 0)
 	vbox.show_all()
 
-	#vbox.pack_start(StatusTable, False, False, 270)
+	box = gtk.HBox()
+	closebtn = gtk.Button()
+	image = gtk.Image()
+	image.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
+	closebtn.connect("clicked", KillPage)
+	closebtn.set_image(image)
+	closebtn.set_relief(gtk.RELIEF_NONE)
+	box.pack_start(UtilsLabel, True, True)
+	box.pack_end(closebtn, False, False)
+	UtilsLabel = box
+	UtilsLabel.show_all()
+
 	notebook.insert_page(InstUtilsTable, UtilsLabel, 5)
+	window.show_all()
 	notebook.set_current_page(5)
 
-	window.show_all()
+
 	
 
 def CopyFrom():
@@ -465,13 +487,13 @@ def CopyFrom():
 			for FromFile in find_files(FromDir3, filename):
 				print("Copy " + FromFile + " to " + ToFile)
 				shutil.copy(FromFile, ToFile)
+		KillPage(cmd)
 
 	CopyFromWindow = window
 	CopyFromLabel = gtk.Label("CopyFrom")
 
 	vbox = gtk.VBox()
 	notebook = MainApp.notebook
-	notebook.insert_page(vbox, CopyFromLabel, 5)
 
 	label = gtk.Label("""This tool copies files existing in a directory FROM an other directory.
 			Can be handy for porting themes and such\n\nMake sure both directories have the same structure!\n\n\n""")
@@ -511,14 +533,31 @@ def CopyFrom():
 	CopyFromTable.attach(StartButton, 0, 2, 3, 4)
 	
 	vbox.pack_end(StatusTable, False, False, 0)
+
+	box = gtk.HBox()
+	closebtn = gtk.Button()
+	image = gtk.Image()
+	image.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
+	closebtn.connect("clicked", KillPage)
+	closebtn.set_image(image)
+	closebtn.set_relief(gtk.RELIEF_NONE)
+	box.pack_start(CopyFromLabel, True, True)
+	box.pack_end(closebtn, False, False)
+	CopyFromLabel = box
+	CopyFromLabel.show_all()
 	
+	notebook.insert_page(vbox, CopyFromLabel, 5)
 	CopyFromWindow.show_all()
+	notebook.set_current_page(5)
 
 def Resize():
 	def StartResize(cmd):
 		DstDir = ScriptDir + "/Resized/"
 		if NormalResize.get_active():
 			Perc = ResizePercentageBox.get_text()
+			#Perc = int(Perc)
+			if not Perc.endswith("%"):
+				Perc = Perc + "%"
 			InDir = ResizeDirBox.get_text()
 		if EasyResize.get_active():
 			InDPI = InDPIBox.get_text()
@@ -608,7 +647,10 @@ def Resize():
 			if not SubDir == '' or SubDir == '/':
 				os.system("mkdir -p " + DstDir + SubDir)
 			print(Image + " -> " + DstFile + "\n")
-			os.system("convert " + Image + " -resize %s " + DstFile) % Perc
+			os.system("convert %s -resize %s %s" % (Image, Perc, DstFile))
+		message = "You can find the resized images in Resized"
+		NewDialog("Resized", "You can find the resized images in Resized")
+		KillPage(cmd)
 		
 		
 	ResizeWindow = window
@@ -616,7 +658,6 @@ def Resize():
 	vbox = gtk.VBox()
 	sw = gtk.ScrolledWindow()
 	notebook = MainApp.notebook
-	notebook.insert_page(sw, ResizeLabel, 5)
 	
 
 	label = gtk.Label("This tool can be used to resize images, but also APK's :D\n\nChoose an option:\n\n")
@@ -709,9 +750,22 @@ def Resize():
 	ResizeStartButton.connect("clicked", StartResize)
 	vbox.pack_start(ResizeStartButton, False, False, 15)
 
-	vbox.pack_end(StatusTable, False, False, 0)
+	box = gtk.HBox()
+	closebtn = gtk.Button()
+	image = gtk.Image()
+	image.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
+	closebtn.connect("clicked", KillPage)
+	closebtn.set_image(image)
+	closebtn.set_relief(gtk.RELIEF_NONE)
+	box.pack_start(ResizeLabel, True, True)
+	box.pack_end(closebtn, False, False)
+	ResizeLabel = box
+	ResizeLabel.show_all()
+
+	notebook.insert_page(sw, ResizeLabel, 5)
 
 	ResizeWindow.show_all()
+	notebook.set_current_page(5)
 
 def Theme():
 	def ShowColor(cmd):
@@ -788,11 +842,23 @@ def Theme():
 	StartButton.connect("clicked", StartTheming)
 	vbox.pack_start(StartButton, False, False, 15)
 
-	ThemeLabel = gtk.Label("Theme")
+	box = gtk.HBox()
+	label = gtk.Label("Theme")
+	closebtn = gtk.Button()
+	image = gtk.Image()
+	image.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
+	closebtn.connect("clicked", KillPage)
+	closebtn.set_image(image)
+	closebtn.set_relief(gtk.RELIEF_NONE)
+	box.pack_start(label, True, True)
+	box.pack_end(closebtn, False, False)
+	ThemeLabel = box
+	ThemeLabel.show_all()
+
 	notebook.insert_page(vbox, ThemeLabel, 5)
-	notebook.set_current_page(5)
 
 	ThemeWindow.show_all()
+	notebook.set_current_page(5)
 	
 
 def PrepareBuilding():
