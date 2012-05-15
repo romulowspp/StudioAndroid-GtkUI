@@ -5,14 +5,9 @@ ScriptCommand=SAP.py
 
 Version=0.70
 
-if [ "$OSTYPE" = "cygwin" ]
-then
-	OPTIONS="cyg"
-fi
-
 python --version
 
-if [ "$?" = "1" ] | [ "$?" = "127" ] && [ "$OSTYPE" != "cygwin" ]
+if [ "$?" != "0" ]
 then
 	sudo apt-get install python
 fi
@@ -26,7 +21,7 @@ echo """
 
 """
 
-python $ScriptDir/$ScriptCommand $OPTIONS
+python $ScriptDir/$ScriptCommand
 
 
 

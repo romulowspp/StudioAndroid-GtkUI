@@ -17,8 +17,22 @@ import signal
 import zipfile
 
 
-Opt5="EMPTY"
+
+ScriptDir=os.path.dirname(sys.argv[0])
+Home=os.path.expanduser('~')
 Web = webbrowser.get()
+
+class Logger(object):
+    def __init__(self):
+        self.terminal = sys.stdout
+        self.log = open(ScriptDir + "/log", "a")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)  
+
+sys.stdout = Logger()
+
 if sys.platform == 'linux2':
 	OS = 'Lin'
 elif sys.platform == 'win32':
@@ -48,6 +62,8 @@ def callback(widget, option):
 		Theme()
 	elif option == '6':
 		PrepareBuilding()
+	elif option == 'Log':
+		Log()
 	elif option == 'change':
 		Changelog()
 	elif option == 'help':
@@ -104,8 +120,6 @@ window.set_position(gtk.WIN_POS_CENTER)
 vbox = gtk.VBox(False, 5)
 hbox = gtk.HBox(False, 5)
 
-ScriptDir=os.path.dirname(sys.argv[0])
-Home=os.path.expanduser('~')
 
 print("OS = " + OS)
 print("ScriptDir = " + ScriptDir)
@@ -307,7 +321,7 @@ class MainApp():
 	OptionsTable.attach(image, 0, 1, 0, 1, yoptions=gtk.EXPAND)
 	
 	MainOptl = gtk.Button("Check the log")
-	MainOptl.connect("clicked", callback, "Check the log")
+	MainOptl.connect("clicked", callback, "Log")
 	OptionsTable.attach(MainOptl, 0, 1, 1, 2, yoptions=gtk.EXPAND)
 
 	MainOptc = gtk.Button("Changelog")
@@ -1064,6 +1078,20 @@ def Changelog():
 
 	sw.add_with_viewport(Label)
 	ChangeWindow.show_all()
+
+def Log():
+	LogWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
+	LogWindow.set_size_request(700, 600)
+	LogWindow.set_title("StudioAndroid - Changelog")
+	sw = gtk.ScrolledWindow()
+	LogWindow.add(sw)
+
+	log = open(ScriptDir + "/log", "r")
+	Text = log.read()
+	Label = gtk.Label(Text)
+
+	sw.add_with_viewport(Label)
+	LogWindow.show_all()
 
 def Help():
 	Web.open("http://forum.xda-developers.com/showpost.php?p=23546408&postcount=9")
