@@ -1,0 +1,18 @@
+This is the latest version of StudioAndroid - GTK GUI.
+I hope you like it!
+
+If you have some free time, please suggest some ideas!
+
+           ______  __      __  _______   ______
+  | |_| | |  __  | \ \    / / |__   __| |  __  |
+  |  _  | | |__| |  \ \/\/ /     | |    | |__| | 
+  | | | | |______|   \____/      |_|    |______|
+
+
+Run the SAP script.
+The way you do this depends on your OS.
+-Ubuntu: double-click SAP, and click "Run in Terminal"
+-Windows: Right-click SAP.py, Open WIth > Python
+-Mac OS X: Drag SAP into a terminal
+
+

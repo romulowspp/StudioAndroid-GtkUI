@@ -1,0 +1,130 @@
+a0.70
+CHANGELOG:
+
+##private beta 1: made the resize script with daddy
+
+##private beta 2: made the copie and copiefrom (cpfr) script
+
+##beta 1:
+[^]made main script
+[^]added support for "rs"
+[^]added hidden options
+[^]added menu scripts
+
+##v1a1:
+[^]published beta 1
+
+##v1a2:
+[^]added support for:
+ADB
+AAPT
+optipng
+7z
+apktool
+[^]improved multitasking
+[^]Added support for HOWTO and CHANGELOG inside script.
+
+##v1b3:
+[^]added support for other directories then home, it doesn't matter anymore :)
+[^]added support for opening web-page inside
+   [>]now you do not see the errors of the webpage anymore
+[^]added a little animation for you ;)
+   [>]Improved animation. I'll add an option to disable it later on.
+[^]added support for installing Android SDK (Eclipse in next update!)
+[^]SUPPORT FOR CPFR!!!
+
+##v1c1:
+[^]Added copyright
+[^]Updated Animation
+[^]Added second section; looks better
+[^]OOPS! I added CopieFrom under the option "c" wich is already changelog!
+[^]Improved other than home directory - was not working
+[^]ICS Blue characters <3
+[^]Added BUILD FROM SOURCE option
+[^]Custom animation speed :)
+[>]To try if this works, please go into terminal and type:
+cat --help
+if it tells you the manual for "cat", then you are fine.
+Option D from the main menu.
+
+##v1c2:
+[^] Added more comments 
+[^] Newer CM source - not MIK_OS but now stock CM, wich includes newest adfad :)
+[^] Custom WaitTime
+[^] New script version :)
+[^] Fixed some bugs
+
+
+##v0.08:
+[^] Switched to version numbers, you'll see why
+[^] Made an install-or-update script instead of letting you download the whole package
+[^] Removed the Animation, I got tired of it myself xD && new colors :)
+[^] Big update: BATCH THEME Option :) You can... Well, batch theme with it!
+[^] Bugfixes & New directory support & Multiple enhancements in source code & improvements
+[^] Completely rewrote RS and CPFR (resize and copiefrom)
+[^] Added MIUIv4 and CodeNameAndroid to the source list! 
+[^] Added an option to switch to LG mode :)
+[^] Option to install the JDK
+
+##v0.09
+[^] Disabled incomplete MIUIv4
+[^] Added Swith SourceBuild-MODE
+   [>] Added LG, Stock & Vision to that.
+[^] New colors
+[^] Improved "Clean Workspace"
+[^] ADDED SOURCENAN. Do not use it yet, but it will work in the future :D
+   [>]What it does: you enter your device, repo's get synced and errors fixed. Done!
+   [>] Implemented it THAT way, and it already adds lunch_combo and removes already defined folders
+[^] Thanks shown on home screen :D
+[^] Upcoming translations by KeitG
+
+##v0.12
+[^] Implemented BuildKernel
+[^] French translation by KeitG - THANKS!
+[^] Some small code improvements. Visual changes to the MAIN MENU
+[^] Added switches and commands. example: "./AC [menu option]" to go to that option DIRECTLY. "./AC -h" to go to the HELP page
+[^] SubDirs now supported in Resize (example: drawable-hdpi gets copied over)
+[^] BetaInstaller inside ACI script
+[^] Every output will now be visible inside LOG!
+[^] Implemented CASE options, more clean. Implemented InvalidOption.
+[^] Utils.zip is now less then HALF the previous size :)
+
+##v0.50
+[&] Changed name to StudioAndroid!
+
+[^] Implemented my own APK Tool ([De]Compile, Zipalign, Sign, Extract, Repackage)
+[^] Implemented Smali, Baksmali, Odex, De-Odex, etc
+	[>] Merged Compile and Decompile. quite a job.
+	[>] Merged Extract and Repackage.
+[^] Added Aroma menu. Not yet usable, hold on.
+[^] You can now choose your key when signing :D
+[^] A HELL LOT of bug-fixes.
+[^] JDKInstaller now supports building ICS.
+
+[>] When Building from source, you can now choose your device :)
+[>>] Build from Source big-bug fixed.
+[>>] Switch BUILD-Mode big-bug fixed
+[>] Completely re-designed Resize, it was confusing for some users. Clear now?
+[>] Updated SAI script for myself, first every changelog had to have 11 lines in total :P
+[>] Switched to Build* instead of Source*. Build* now also includes Kernel building (not fully defined yet!)
+[>] Redesigned the tool, again :P Every time more and more options to come. Request please!
+[>] Implemented red text. That will highlight a warning :)
+[>] When using "SA" instead of "./SA", the script will now also copy all arguments.
+
+[ ] Every piece of the script is now much cleaner. I updated the "case" situation again.
+
+##v0.52
+[^] You can now resize an entire APK with one click :D All resolutions supported.
+[^] Implemented an Alert when an error occured.
+[^] Choosing device fully updated, it works now.
+[^] BuildKernel bug fixed (thanks @cips gokhle)
+[>] More of that bugs fixed ^^
+[^] CopyFrom bug fixed (typo)
+[^] Aroma now downloads the latest update from XDA instead of from my Dropbox
+
+##v0.53
+[&] Resize APK finally done; now also signs the APK (whoops)
+
+###v0.70
+[&&] Re-built script in Python with Gtk for UI.
+[^] Every option is now MUCH more comfortable in use.
