@@ -1,0 +1,48 @@
+= Changelog =
+
+< $1:
+{{{
+Install Utilities succesfully ported and improved.
+CopyFrom succesfully ported and improved.
+Resize Almost ported
+Theme Almost ported
+(De)Compile Ported and improved
+Extract \ Repackage Ported and improved
+Sign Succesfully ported and improved
+Prepare building succesfully ported and improved.
+Install Android SDK Ported and improved (Mac, Linux, Windows)
+}}}
+
+$1:
+{{{
+Some bugs fixed:
+Sign not working (Zip not found java error)
+Clicking X button will close current tab, instead of tab with X button.
+
+New icon
+New settings concerning FirstRun
+Restart button (-> Options)
+}}}
+
+$2:
+{{{
+Zipalign added
+}}}
+
+$3:
+{{{
+Compile, Zip, Sign removed (this tool already supports quick taksing)
+Install APK ported
+}}}
+
+$4:
+{{{
+Build from Source partially included: Syncing and choosing other devices supported, but building not yet.
+Switch Build-Mode removed, included in Build from Source option.
+}}}
+
+%5:
+{{{
+Added options menu to the top bar, removed it from the notebook
+Re-worked Build from Source. Much cleaner now. Device selection supported in top bar
+}}}
