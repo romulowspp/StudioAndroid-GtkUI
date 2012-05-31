@@ -19,6 +19,7 @@ import py_compile
 import threading
 from gettext import *
 import imp
+import multiprocessing
 from Source.SourceP500 import *
 from Source.SourceStock import *
 _ = gettext
@@ -32,7 +33,7 @@ i=0
 for line in open("/proc/cpuinfo"):
 	if "processor" in line:
 		i=i+1
-Cores = str(i)
+Cores = str(multiprocessing.cpu_count())
 
 class Logger(object):
     def __init__(self):
@@ -55,7 +56,7 @@ else:
 	print _("Your OS is not Windows32 and not Linux2, could you PM me the next output?\n\n\n" + sys.platform)
 
 if OS == 'Lin':
-	FirstRun = False
+	FirstRun = True
 else :
 	FirstRun = False
 
