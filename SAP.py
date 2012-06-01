@@ -29,10 +29,6 @@ Home=os.path.expanduser('~')
 Web = webbrowser.get()
 RootDir = os.path.dirname(os.path.dirname(os.getcwd()))
 MyFile = sys.argv[0].replace(ScriptDir, '')
-i=0
-for line in open("/proc/cpuinfo"):
-	if "processor" in line:
-		i=i+1
 Cores = str(multiprocessing.cpu_count())
 
 class Logger(object):
