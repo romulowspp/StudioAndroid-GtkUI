@@ -20,14 +20,14 @@ import threading
 from gettext import *
 import imp
 import multiprocessing
+import subprocess
+import popen2
 from Source.SourceP500 import *
 from Source.SourceStock import *
 _ = gettext
 
-ScriptDir=os.getcwd()
+ScriptDir=os.path.dirname(sys.argv[0])
 Home=os.path.expanduser('~')
-Web = webbrowser.get()
-RootDir = os.path.dirname(os.path.dirname(os.getcwd()))
 MyFile = sys.argv[0].replace(ScriptDir, '')
 Cores = str(multiprocessing.cpu_count())
 
@@ -50,11 +50,7 @@ elif sys.platform == 'win64':
 	OS = 'Win'
 else:
 	print _("Your OS is not Windows32 and not Linux2, could you PM me the next output?\n\n\n" + sys.platform)
-
-if OS == 'Lin':
-	FirstRun = True
-else :
-	FirstRun = False
+	OS = 'Default'
 
 def delete_event(self, widget, event, data=None):
 	gtk.main_quit()
@@ -75,6 +71,7 @@ sz = ScriptDir + "/7za"
 ApkJar = ScriptDir + "/Utils/apktool.jar"
 SignJar = ScriptDir + "/Utils/signapk.jar"
 ZipalignFile = ScriptDir + "/Utils/zipalign"
+Web = webbrowser.get()
 
 def callback(widget, option):
 	if option == 'Cl':
@@ -174,6 +171,13 @@ for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance"]
 		pass
 
 
+if not os.path.exists(Home + "/.SA"):
+	os.makedirs(Home + "/.SA")
+	FirstRun = True
+	NewDialog("First Run", "Hi there! It seems this is your first time to run StudioAndroid!\nPlease note this tool still has a long way to go,\n and I need testers and reporters...\n So please publish your LOG!")
+else:
+	FirstRun = False
+
 
 window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 window.set_title("StudioAndroid")
@@ -244,7 +248,8 @@ class MainApp():
 	notebook = gtk.Notebook()
 	notebook.set_tab_pos(gtk.POS_TOP)
 	vbox.pack_start(notebook)
-	notebook.set_scrollable(True)
+	notebook.set_scrollable(True)	
+	#notebook.set_property('homogeneous', True)
 
         notebook.show()
 
@@ -266,15 +271,15 @@ class MainApp():
 	MainOpt1.connect("clicked", callback, "1")
 	UtilVBox.pack_start(MainOpt1, False, False, 10)
 
-	MainOpt2 = gtk.Button("CopieFrom")
+	MainOpt2 = gtk.Button( _("CopieFrom"))
 	MainOpt2.connect("clicked", callback, "2")
 	UtilVBox.pack_start(MainOpt2, False, False, 10)
 
-	MainOpt3 = gtk.Button("Resize")
+	MainOpt3 = gtk.Button( _("Resize"))
 	MainOpt3.connect("clicked", callback, "3")
 	UtilVBox.pack_start(MainOpt3, False, False, 10)
 
-	MainOpt4 = gtk.Button("Batch Theme")
+	MainOpt4 = gtk.Button( _("Batch Theme"))
 	MainOpt4.connect("clicked", callback, "4")
 	UtilVBox.pack_start(MainOpt4, False, False, 10)
 
@@ -295,13 +300,14 @@ class MainApp():
 	image.show()
 	DevelopVBox.pack_start(image)
 
-	MainOpt6 = gtk.Button("Prepare Building")
-	MainOpt6.connect("clicked", callback, "6")
-	DevelopVBox.pack_start(MainOpt6, False, False, 10)
+	if not OS == 'Win':
+		MainOpt6 = gtk.Button("Prepare Building")
+		MainOpt6.connect("clicked", callback, "6")
+		DevelopVBox.pack_start(MainOpt6, False, False, 10)
 
-	MainOpt7 = gtk.Button("Build from Source")
-	MainOpt7.connect("clicked", callback, "BuildSource")
-	DevelopVBox.pack_start(MainOpt7, False, False, 10)
+		MainOpt7 = gtk.Button("Build from Source")
+		MainOpt7.connect("clicked", callback, "BuildSource")
+		DevelopVBox.pack_start(MainOpt7, False, False, 10)
 
 	MainOpt8 = gtk.Button("Build Kernel")
 	MainOpt8.connect("clicked", callback, "8")
@@ -420,42 +426,45 @@ def Utils():
 		button10.set_active(True)
 	
 	def Install(cmd):
-		if OS == 'Lin':
-			os.system("mkdir -p " + Home + "/bin")
+		def Copy(Subdir):
 			if button1.get_active():
-				shutil.copy(ScriptDir + "/Utils/adb", Home + "/bin/")
+				shutil.copy(ScriptDir + "/Utils/adb", Home + "%s/" % Subdir)
 			if button2.get_active():
-				shutil.copy(ScriptDir + "/Utils/aapt", Home + "/bin")
+				shutil.copy(ScriptDir + "/Utils/aapt", Home + "%s" % Subdir)
 			if button3.get_active():
-				shutil.copy(ScriptDir + "/Utils/7za", Home + "/bin")
+				shutil.copy(ScriptDir + "/Utils/7za", Home + "%s" % Subdir)
 			if button4.get_active(): 
-				os.system("mkdir -p " + Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/Script.sh", Home + "/bin")
-				shutil.copy(ScriptDir + "/Utils/apktool.jar", Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/apktool", Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/7za", Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/aapt", Home + "/bin/other")
-				shutil.copy(ScriptDir + "/Utils/optipng", Home + "/bin/other")
+				os.system("mkdir -p " + Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/Script.sh", Home + "%s" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/apktool.jar", Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/apktool", Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/7za", Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/aapt", Home + "%s/other" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/optipng", Home + "%s/other" % Subdir)
 			if button5.get_active():
-				shutil.copy(ScriptDir + "/Utils/optipng", Home + "/bin")
+				shutil.copy(ScriptDir + "/Utils/optipng", Home + "%s" % Subdir)
 			if button6.get_active():
-				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "/bin/")
-				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "/bin/")
-				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "/bin/")
+				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "%s/" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "%s/" % Subdir)
+				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "%s/" % Subdir)
 			if button7.get_active():
-				shutil.copy(ScriptDir + "/Utils/smali-1.3.2.jar", Home + "/bin")
+				shutil.copy(ScriptDir + "/Utils/smali-1.3.2.jar", Home + "%s" % Subdir)
 			if button8.get_active():
-				shutil.copy(ScriptDir + "/Utils/baksmali-1.3.2.jar", Home + "/bin")
+				shutil.copy(ScriptDir + "/Utils/baksmali-1.3.2.jar", Home + "%s" % Subdir)	
+		if OS == 'Lin':
+			os.makedirs(Home + "/bin")
+			Copy("/bin")
 			if button10.get_active():
 				os.system("sudo apt-get install imagemagick")
 		if OS == 'Win':
-			os.system('setx path "%PATH%;C:\New Folder')
+			os.makedirs(Home + "/Utils/")
+			Copy("/Utils")
 			print("Sorry, windows does not support $PATH modifications from cmd...\nInstead, I will open up a site for you")
 			print("That site contains a HOWTO on adding a directory to the PATH.")
-			print("Add this directory: " + ScriptDir + "\Utils")
+			print("Add this directory: " + Home + "\Utils")
 			if button10.get_active():
 				ImageMagick = '[2] Open link and install imagemagick'
 			else:
@@ -593,8 +602,6 @@ def CopyFrom():
 	StartButton = gtk.Button("CopyFrom!")
 	StartButton.connect("clicked", Start)
 	CopyFromTable.attach(StartButton, 0, 2, 3, 4)
-	
-	vbox.pack_end(StatusTable, False, False, 0)
 
 	CopyFromLabel = NewPage("CopyFrom")
 	CopyFromLabel.show_all()
@@ -605,7 +612,7 @@ def CopyFrom():
 
 def Resize():
 	def StartResize(cmd):
-		DstDir = ScriptDir + "/Resized/"
+		DstDir = os.path.join(ScriptDir, "Resized")
 		if NormalResize.get_active():
 			Perc = ResizePercentageBox.get_text()
 			#Perc = int(Perc)
@@ -672,8 +679,8 @@ def Resize():
 			ResizeApk = ApkResizeDirBox.get_text()
 			FullZipDir = ScriptDir + "/Resizing"
 			zipfile.ZipFile(ResizeApk).extractall(path=FullZipDir)
-			InDir = ScriptDir + "/Resizing/res/drawable-" + InDir1
-			DstDir = ScriptDir + "/Resizing/res/drawable-" + OutDir1 + "/"
+			InDir = os.path.join(ScriptDir, "Resizing/res/drawable-" + InDir1)
+			DstDir = os.path.join(ScriptDir, "Resizing/res/drawable-" + OutDir1 + "/")
 
 		if ApkResize.get_active() or EasyResize.get_active():
 			Perc = OutRes * 100 / InRes
@@ -682,8 +689,8 @@ def Resize():
 		print "Resize percentage is",
 		print Perc
 
-		os.system("rm -r " + DstDir)
-		os.system("mkdir -p " + DstDir)
+		shutil.rmtree(DstDir)
+		os.makedirs(DstDir)
 		if not InDir.endswith("/"):
 			SrcDir = InDir + "/"
 		else:
@@ -698,7 +705,7 @@ def Resize():
 			SubD = Sub.replace(Name, '')
 			SubDir = SubD
 			if not SubDir == '' or SubDir == '/':
-				os.system("mkdir -p " + DstDir + SubDir)
+				os.makedirs("mkdir -p " + DstDir + SubDir)
 			print(Image + " -> " + DstFile + "\n")
 			os.system("convert %s -resize %s %s" % (Image, Perc, DstFile))
 		message = "You can find the resized images in Resized"
@@ -1135,21 +1142,55 @@ cd %s
 repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 		StartBuild("cmd")
 	def StartBuild(cmd):
-		Std = gtk.RadioButton(None, "None")
 		if not os.path.exists(SourceDir + "/.repo"):
 			NewDialog("ERROR", SourceDir + " does not exist!\nPress SYNC instead.")
 		else:
+			BuildLabel = NewPage("Build")
+			BuildLabel.show_all()
+			notebook.remove_page(4)
+			sw = gtk.ScrolledWindow()
+			vbox = gtk.VBox()
+			Std = gtk.RadioButton(None, "Std")
+
 			for devi in find_files(SourceDir + "/device", "vendorsetup.sh"):
-				i = 1
 				for line in open(devi).readlines():
-					i = i+1
+					if not line.startswith('#') and 'add_lunch_combo' in line:
+						Text = line.replace('\n', '')
+						Text = Text.replace('add_lunch_combo', '')
+						Text = Text.replace('_', '--')
+						NameBtn = gtk.RadioButton(Std, Text)
+						vbox.pack_start(NameBtn)
 			for devi in find_files(SourceDir + "/vendor", "vendorsetup.sh"):
-				print devi
+				for line in open(devi).readlines():
+					if not line.startswith('#') and 'add_lunch_combo' in line:
+						Text = line.replace('\n', '')
+						Text = Text.replace('add_lunch_combo', '')
+						Text = Text.replace('_', '--')
+						NameBtn = gtk.RadioButton(Std, Text)
+						vbox.pack_start(NameBtn)
+
+			StartButton = gtk.Button("Build!")
+			vbox.pack_start(StartButton)
+			StartButton.connect("clicked", Make, Std)
+
+			sw.add_with_viewport(vbox)
+			notebook.insert_page(sw, BuildLabel, 4)
+			window.show_all()
+			notebook.set_current_page(4)
+	def Make(cmd, GroupStandard):
+		os.chdir(SourceDir)
+		active = str([r for r in GroupStandard.get_group() if r.get_active()][0].get_label().replace('--', '_'))
+		os.system('''source build/envsetup.sh
+brunch %s
+make otapackage''' % active)
 			
 
 		
 	def NewSources(cmd, SourceFile):
+		f = open(Home + "/.SA/Device", "w")
+		print >> f,SourceFile
 		SourceFile = SourceFile.replace('.py', '')
+		SourceFile = SourceFile.replace('\n', '')
 		global Sources, URL
 		if SourceFile == 'SourceP500': from Source.SourceP500 import URL, Sources
 		if SourceFile == 'SourceStock': from Source.SourceStock import URL,  Sources
@@ -1167,15 +1208,15 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 
 
 	global Force, Quiet, Local, Jobs
-	label = gtk.Label("Choose a specific device to build for:")
+	label = gtk.Label( _("Choose a specific device to build for:"))
 	vbox.pack_start(label, False, False, 0)
 	hbox = gtk.HBox()
 	#vbox.pack_start(hbox, False, False, 3)
 
-	label = gtk.Label("Choose the OS you want to build:")
+	label = gtk.Label( _("Choose the OS you want to build:"))
 	vbox.pack_start(label, False, False, 10)
 
-	Std = gtk.RadioButton(None, "Test")
+	Std = gtk.RadioButton(None, "Std")
 	Std.show()
 
 	vbox2 = gtk.VBox()
@@ -1192,7 +1233,6 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 			NameBtn.connect("clicked", SetURL, num, NameBtn)
 			vbox3.pack_start(NameBtn, False, False, 0)
 		window.show_all()
-
 	SetPage()
 
 	hbox = gtk.HBox()
@@ -1201,16 +1241,16 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 	SyncButton.connect("clicked", StartSync)
 	hbox.pack_start(SyncButton)
 
-	SkipButton = gtk.Button("Build (Only when synced)")
+	SkipButton = gtk.Button( _("Build (Only when synced)"))
 	SkipButton.connect("clicked", StartBuild)
 	hbox.pack_start(SkipButton)
 
 	vbox.pack_start(hbox, False, False, 10)
 
-	Force = gtk.CheckButton("Force sync")
+	Force = gtk.CheckButton( _("Force sync"))
 	vbox.pack_start(Force, False, False, 0)
 
-	Quiet = gtk.CheckButton("Be quiet!")
+	Quiet = gtk.CheckButton( _("Be quiet!"))
 	vbox.pack_start(Quiet, False, False, 0)
 
 	Local = gtk.CheckButton("Sync local only")
@@ -1244,6 +1284,11 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 		DeviceMenu.append(MenuItem)
 		MenuItem.connect("activate", NewSources, SourceFile)
 		MenuItem.show()
+
+	if os.path.exists(Home + "/.SA/Device"):
+		Text = open(Home + "/.SA/Device", "r")
+		Text = Text.readlines()[0]
+		NewSources("cmd", Text)
 
 	menu.show_all()
 

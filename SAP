@@ -31,11 +31,4 @@ python $ScriptDir/$ScriptCommand
 True=$( grep -w 'FirstRun = True' $ScriptDir/SAP.py )
 
 
-if [ "$?" = "0" ] && [ "$True" != "" ]
-then
-	sed -i 's/FirstRun = True/FirstRun = False/g' $ScriptDir/SAP.py
-	rm  -f $ScriptDir/SAP.pyc
-fi
-
-
 
