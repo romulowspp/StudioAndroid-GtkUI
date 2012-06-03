@@ -19,6 +19,7 @@ import py_compile
 import threading
 from gettext import *
 import imp
+import time
 import multiprocessing
 import subprocess
 import popen2
@@ -26,15 +27,15 @@ from Source.SourceP500 import *
 from Source.SourceStock import *
 _ = gettext
 
-ScriptDir=os.path.dirname(sys.argv[0])
+ScriptDir=os.path.abspath(os.path.dirname(sys.argv[0]))
 Home=os.path.expanduser('~')
-MyFile = sys.argv[0].replace(ScriptDir, '')
+MyFile = os.path.abspath(sys.argv[0].replace(ScriptDir, ''))
 Cores = str(multiprocessing.cpu_count())
 
 class Logger(object):
     def __init__(self):
         self.terminal = sys.stdout
-        self.log = open(ScriptDir + "/log", "a")
+        self.log = open(os.path.join(ScriptDir, "log"), "a")
 
     def write(self, message):
         self.terminal.write(message)
@@ -148,8 +149,9 @@ def find_files(directory, pattern):
                 yield filename
 
 
-zipfile.ZipFile(ScriptDir + "/Utils.zip").extractall()
-os.system("chmod 755 " + ScriptDir + "/Utils/*")
+zipfile.ZipFile(os.path.join(ScriptDir, "Utils.zip")).extractall()
+if not OS == 'Win':
+	os.system("chmod 755 " + os.path.join(ScriptDir, "Utils") + "/*")
 
 def NewPage(Label):
 	box = gtk.HBox()
@@ -171,12 +173,48 @@ for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance"]
 		pass
 
 
-if not os.path.exists(Home + "/.SA"):
+if not os.path.exists(os.path.join(Home, ".SA")):
 	os.makedirs(Home + "/.SA")
 	FirstRun = True
-	NewDialog("First Run", "Hi there! It seems this is your first time to run StudioAndroid!\nPlease note this tool still has a long way to go,\n and I need testers and reporters...\n So please publish your LOG!")
+	NewDialog( _("First Run"), _("Hi there! It seems this is your first time to run StudioAndroid!\nPlease note this tool still has a long way to go,\n and I need testers and reporters...\n So please publish your LOG!") )
 else:
 	FirstRun = False
+
+if not os.path.exists(os.path.join(Home, ".SA", "Language")):
+	LangSet = '0'
+	def PickLanguage(cmd):
+		global LangSet
+		f = open(os.path.join(Home, ".SA", "Language"), "w")
+		f.close()
+		f = open(os.path.join(Home, ".SA", "Language"), "w")
+		global sett
+		if FrBtn.get_active(): f.write("Fr")
+		if EnBtn.get_active(): f.write("En")
+		if ItBtn.get_active(): f.write("En")
+		window2.destroy()
+		LangSet = '1'
+	window2 = gtk.Window(gtk.WINDOW_TOPLEVEL)
+	window2.set_position(gtk.WIN_POS_MOUSE)
+	window2.set_resizable(False)
+	window2.set_title("Choose language")
+	vbox = gtk.VBox(False, 0)
+	window2.add(vbox)
+	FrBtn = gtk.RadioButton(None, "Francais")
+	EnBtn = gtk.RadioButton(FrBtn, "English")
+	ItBtn = gtk.RadioButton(FrBtn, "Italiano")
+	vbox.pack_start(FrBtn)
+	vbox.pack_start(EnBtn)
+	vbox.pack_start(ItBtn)
+	
+	ChooseBtn = gtk.Button("Choisissez | Choose | Scegli")
+	vbox.pack_start(ChooseBtn)
+	ChooseBtn.connect("clicked", PickLanguage)
+	window2.show_all()
+	gtk.main()
+	while not LangSet == '1':
+		time.sleep(1)
+	Restart()
+	exit()
 
 
 window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -337,23 +375,23 @@ class MainApp():
 	image.show()
 	APKVBox.pack_start(image)
 
-	MainOpt13 = gtk.Button("(De)Compile")
+	MainOpt13 = gtk.Button( _("(De)Compile"))
 	MainOpt13.connect("clicked", callback, "DeC")
 	APKVBox.pack_start(MainOpt13, False, False, 10)
 
-	MainOpt14 = gtk.Button("Extract/Repackage")
+	MainOpt14 = gtk.Button( _("Extract/Repackage") )
 	MainOpt14.connect("clicked", callback, "ExP")
 	APKVBox.pack_start(MainOpt14, False, False, 10)
 
-	MainOpt15 = gtk.Button("Sign APK")
+	MainOpt15 = gtk.Button( _("Sign APK") )
 	MainOpt15.connect("clicked", callback, "Sign")
 	APKVBox.pack_start(MainOpt15, False, False, 10)
 
-	MainOpt16 = gtk.Button("Zipalign APK")
+	MainOpt16 = gtk.Button( _("Zipalign APK") )
 	MainOpt16.connect("clicked", callback, "Zip")
 	APKVBox.pack_start(MainOpt16, False, False, 10)
 
-	MainOpt18 = gtk.Button("Install APK")
+	MainOpt18 = gtk.Button( _("Install APK") )
 	MainOpt18.connect("clicked", callback, "Inst")
 	APKVBox.pack_start(MainOpt18, False, False, 10)
 
@@ -677,18 +715,17 @@ def Resize():
 				OutRes = OutDPI
 			InApk = ApkResizeDirBox.get_text()
 			ResizeApk = ApkResizeDirBox.get_text()
-			FullZipDir = ScriptDir + "/Resizing"
+			FullZipDir = os.path.join(ScriptDir, "Resizing")
 			zipfile.ZipFile(ResizeApk).extractall(path=FullZipDir)
-			InDir = os.path.join(ScriptDir, "Resizing/res/drawable-" + InDir1)
-			DstDir = os.path.join(ScriptDir, "Resizing/res/drawable-" + OutDir1 + "/")
+			InDir = os.path.join(ScriptDir, "Resizing", "res", "drawable-" + InDir1)
+			DstDir = os.path.join(ScriptDir, "Resizing", "res", "drawable-" + OutDir1 + "/")
 
 		if ApkResize.get_active() or EasyResize.get_active():
 			Perc = OutRes * 100 / InRes
 
 
-		print "Resize percentage is",
-		print Perc
-
+		print _("Resize percentage is " + Perc)
+		
 		shutil.rmtree(DstDir)
 		os.makedirs(DstDir)
 		if not InDir.endswith("/"):
@@ -767,7 +804,7 @@ def Resize():
 	EasyResizeTable.attach(OutDPILabel, 1, 2, 1, 2)
 
 	EasyResizeDirBox = gtk.Entry()
-	EasyResizeDirBox.set_text(ScriptDir + "/")
+	EasyResizeDirBox.set_text(ScriptDir)
 	EasyResizeDirBox.set_size_request(0, 30)
 	EasyResizeTable.attach(EasyResizeDirBox, 0, 1, 2, 3, xpadding=20)
 	ResizeDirLabel = gtk.Label("Enter the directory containing the images you want to resize")
@@ -845,11 +882,11 @@ def Theme():
 			Image1 = str(Image)
 			os.system("mogrify -colorize " + Red + "," + Green + "," + Blue + " " + Image1)
 	ThemeWindow = window	
-	ThemeLabel = gtk.Label("Place the images you want to theme inside " + ScriptDir + "/Theme/")
+	SrcDir = os.path.join(ScriptDir, "Theme")
+	ThemeLabel = gtk.Label("Place the images you want to theme inside " + SrcDir)
 	notebook = MainApp.notebook
 
-	SrcDir = ScriptDir + "/Theme"
-	os.system("mkdir -p " + SrcDir)
+	os.makedirs(SrcDir)
 
 	vbox = gtk.VBox()
 	vbox.pack_start(ThemeLabel, False, False, 10)
@@ -1180,9 +1217,7 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 	def Make(cmd, GroupStandard):
 		os.chdir(SourceDir)
 		active = str([r for r in GroupStandard.get_group() if r.get_active()][0].get_label().replace('--', '_'))
-		os.system('''source build/envsetup.sh
-brunch %s
-make otapackage''' % active)
+		os.system(os.path.join(ScriptDir, "Source/Build.sh %s" % active))
 			
 
 		
@@ -1298,22 +1333,23 @@ def DeCompile():
 			Number = len(decname)
 			for num in range(0, Number):
 				APK = decname[num]
-				for apk in find_files(ScriptDir + "/APK/IN/", '*.apk'):
+				for apk in find_files(os.path.join(ScriptDir, "APK", "IN"), '*.apk'):
 					name = os.path.basename(apk)
 					if APK == name :
 						ApkDir = APK.replace('.apk', '')
-						APK = ScriptDir + "/APK/IN/" + APK
-						os.system("java -jar %s d -f %s %s/APK/DEC/%s" %(ApkJar, APK, ScriptDir, ApkDir))
-						print("java -jar %s d -f %s %s/APK/DEC/%s" %(ApkJar, APK, ScriptDir, ApkDir))
+						APK = os.path.join(ScriptDir, "APK", "IN", APK)
+						OutDir = os.path.join(ScriptDir, "APK", "DEC", ApkDir)
+						os.system("java -jar %s d -f %s %s" %(ApkJar, APK, OutDir))
 						print("Decompile " + APK)
 		if CompileButton.get_active():
 			Number = len(comname)
 			for num in range(0, Number):
 				Dec = comname[num]
-				for dec in os.listdir(ScriptDir + "/APK/DEC/"):
+				for dec in os.listdir(os.path.join(ScriptDir, "APK", "DEC")):
 					if dec == Dec :
-						ApkFolder = ScriptDir + "/APK/DEC/" + dec
-						ApkName = ScriptDir + "/APK/OUT/Unsigned-" + Dec + ".apk"
+						ApkFolder = os.path.join(ScriptDir, "APK", "DEC", dec)
+						ApkName = os.path.join(ScriptDir, "APK", "OUT", "Unsigned-" + Dec + ".apk")
+						print("\n\n\njava -jar %s b -f %s %s\n\n\n" %(ApkJar, ApkFolder, ApkName))
 						os.system("java -jar %s b -f %s %s" %(ApkJar, ApkFolder, ApkName))
 	DeCompileWindow = window
 	notebook = MainApp.notebook
@@ -1322,12 +1358,10 @@ def DeCompile():
 	DecompileButton = gtk.RadioButton(None, "Decompile")
 	CompileButton = gtk.RadioButton(DecompileButton, "Compile")
 	vbox.pack_start(DecompileButton, False, False, 10)
-	dec = -1
 	decname = []
 
 
 	for apk in find_files(ScriptDir + "/APK/IN/", '*.apk'):
-		dec = dec + 1
 		name = os.path.basename(apk)
 		NameBtn = gtk.CheckButton(name)
 		NameBtn.connect("toggled", AddToList, decname, name, NameBtn)
