@@ -7,22 +7,18 @@ import webbrowser
 import urllib
 import urllib2
 import sys
+import platform
 import random
 import pygtk
 pygtk.require('2.0')
 import gtk
-import gobject
 import shutil
-import signal
 import zipfile
 import py_compile
 import threading
 from gettext import *
-import imp
 import time
 import multiprocessing
-import subprocess
-import popen2
 from Source.SourceP500 import *
 from Source.SourceStock import *
 _ = gettext
@@ -650,7 +646,7 @@ def CopyFrom():
 
 def Resize():
 	def StartResize(cmd):
-		DstDir = os.path.join(ScriptDir, "Resized")
+		DstDir = os.path.join(ScriptDir, "Resized/")
 		if NormalResize.get_active():
 			Perc = ResizePercentageBox.get_text()
 			#Perc = int(Perc)
@@ -718,17 +714,23 @@ def Resize():
 			FullZipDir = os.path.join(ScriptDir, "Resizing")
 			zipfile.ZipFile(ResizeApk).extractall(path=FullZipDir)
 			InDir = os.path.join(ScriptDir, "Resizing", "res", "drawable-" + InDir1)
-			DstDir = os.path.join(ScriptDir, "Resizing", "res", "drawable-" + OutDir1 + "/")
+			DstDir = os.path.join(ScriptDir, "Resizing", "res", "drawable-" + OutDir1)
+			if OS == 'Win' and not DstDir.endswith('\\'):
+				DstDir = DstDir + '\\'
+			elif not DstDir.endswith('\\'):
+				DstDir = DstDir + "/"
 
 		if ApkResize.get_active() or EasyResize.get_active():
 			Perc = OutRes * 100 / InRes
 
 
-		print _("Resize percentage is " + Perc)
-		
-		shutil.rmtree(DstDir)
+		print _("Resize percentage is " + str(Perc))
+		if os.path.exists(DstDir):
+			shutil.rmtree(DstDir)
 		os.makedirs(DstDir)
-		if not InDir.endswith("/"):
+		if OS == "Win" and not InDir.endswith('\\'):
+			SrcDir = InDir + "\\"
+		elif not OS == 'Win' and not InDir.endswith('\\'):
 			SrcDir = InDir + "/"
 		else:
 			SrcDir = InDir
@@ -739,10 +741,9 @@ def Resize():
 			DstFile = Image.replace(SrcDir, DstDir)
 			Name = os.path.basename(Image)
 			Sub = Image.replace(SrcDir, '')
-			SubD = Sub.replace(Name, '')
-			SubDir = SubD
-			if not SubDir == '' or SubDir == '/':
-				os.makedirs("mkdir -p " + DstDir + SubDir)
+			Sub = Sub.replace(Name, '')
+			if not os.path.exists(DstDir + Sub):
+				os.makedirs(DstDir + Sub)
 			print(Image + " -> " + DstFile + "\n")
 			os.system("convert %s -resize %s %s" % (Image, Perc, DstFile))
 		message = "You can find the resized images in Resized"
@@ -1125,6 +1126,12 @@ g++-multilib mingw32 openjdk-6-jdk tofrodos libxml2-utils xsltproc zlib1g-dev:i3
 	def SetButton64(cmd):
 		Button64.set_active(True)
 	Button1204.connect("toggled", SetButton64)
+	if (sys.maxsize > 2**32) == True:
+		Button64.set_active()
+	if platform.dist()[1] == 12.04: Button1204.set_active(True)
+	elif platform.dist()[1] == 1110: Button1110.set_active(True)
+	elif platform.dist()[1] == 1010: Button1010.set_active(True)
+	elif platform.dist()[1] == 1004: Button1004.set_active(True)
 	box.pack_start(Button64, False, False, 10)
 	ButtonPrepare = gtk.Button("Prepare to Build")
 	ButtonPrepare.connect("clicked", Prepare)
@@ -1217,8 +1224,8 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 	def Make(cmd, GroupStandard):
 		os.chdir(SourceDir)
 		active = str([r for r in GroupStandard.get_group() if r.get_active()][0].get_label().replace('--', '_'))
-		os.system(os.path.join(ScriptDir, "Source/Build.sh %s" % active))
-			
+		active = active.replace(' ', '')
+		os.system(os.path.join(ScriptDir, "Source", "Build.sh") + " " + active)			
 
 		
 	def NewSources(cmd, SourceFile):

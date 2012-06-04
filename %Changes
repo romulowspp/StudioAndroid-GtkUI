@@ -47,3 +47,11 @@ Added options menu to the top bar, removed it from the notebook
 Re-worked Build from Source. Much cleaner now. Device selection supported in top bar
 Multi-OS Core detection
 }}}
+
+%6
+{{{
+Re-worked Resize option (Windows users: TEST PLEASE!)
+OS and 32/64 bits detection
+Build from Source can now finally build :D Using Build.sh
+Every Directory-dependent string should now work on windows, too!
+}}}
