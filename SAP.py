@@ -64,10 +64,10 @@ def Restart(cmd):
 	python = sys.executable
 	os.execl(python, python, * sys.argv)
 
-sz = ScriptDir + "/7za"
-ApkJar = ScriptDir + "/Utils/apktool.jar"
-SignJar = ScriptDir + "/Utils/signapk.jar"
-ZipalignFile = ScriptDir + "/Utils/zipalign"
+sz = os.path.join(ScriptDir, "7za")
+ApkJar = os.path.join(ScriptDir, "Utils", "apktool.jar")
+SignJar = os.path.join(ScriptDir, "Utils", "signapk.jar")
+ZipalignFile = os.path.join(ScriptDir, "Utils", "zipalign")
 Web = webbrowser.get()
 
 def callback(widget, option):
@@ -188,7 +188,7 @@ if not os.path.exists(os.path.join(Home, ".SA", "Language")):
 		if EnBtn.get_active(): f.write("En")
 		if ItBtn.get_active(): f.write("En")
 		window2.destroy()
-		LangSet = '1'
+		Restart("cmd")
 	window2 = gtk.Window(gtk.WINDOW_TOPLEVEL)
 	window2.set_position(gtk.WIN_POS_MOUSE)
 	window2.set_resizable(False)
@@ -205,12 +205,6 @@ if not os.path.exists(os.path.join(Home, ".SA", "Language")):
 	ChooseBtn = gtk.Button("Choisissez | Choose | Scegli")
 	vbox.pack_start(ChooseBtn)
 	ChooseBtn.connect("clicked", PickLanguage)
-	window2.show_all()
-	gtk.main()
-	while not LangSet == '1':
-		time.sleep(1)
-	Restart()
-	exit()
 
 
 window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -434,7 +428,7 @@ class MainApp():
 	window.show_all()
 
 def Clean():
-	for tree in ['APK', 'Resize', 'Resized', 'Resizing', 'Advance', 'Utils']:
+	for tree in ['APK', 'Resize', 'Resized', 'Resizing', 'Advance', 'Utils', 'Theme']:
 		try:
 			shutil.rmtree(tree)
 		except (IOError, OSError):
@@ -646,7 +640,7 @@ def CopyFrom():
 
 def Resize():
 	def StartResize(cmd):
-		DstDir = os.path.join(ScriptDir, "Resized/")
+		DstDir = os.path.join(ScriptDir, "Resized")
 		if NormalResize.get_active():
 			Perc = ResizePercentageBox.get_text()
 			#Perc = int(Perc)
@@ -715,14 +709,14 @@ def Resize():
 			zipfile.ZipFile(ResizeApk).extractall(path=FullZipDir)
 			InDir = os.path.join(ScriptDir, "Resizing", "res", "drawable-" + InDir1)
 			DstDir = os.path.join(ScriptDir, "Resizing", "res", "drawable-" + OutDir1)
-			if OS == 'Win' and not DstDir.endswith('\\'):
-				DstDir = DstDir + '\\'
-			elif not DstDir.endswith('\\'):
-				DstDir = DstDir + "/"
 
 		if ApkResize.get_active() or EasyResize.get_active():
-			Perc = OutRes * 100 / InRes
+			Perc = str(round(OutRes * 100 / InRes, 2)) + "%"
 
+		if OS == 'Win' and not DstDir.endswith('\\'):
+			DstDir = DstDir + '\\'
+		elif not OS == 'Win' and not DstDir.endswith('/'):
+			DstDir = DstDir + "/"
 
 		print _("Resize percentage is " + str(Perc))
 		if os.path.exists(DstDir):
@@ -1146,15 +1140,15 @@ def SDK():
 	print("\n\n Downloading SDK installer!\n\n")
 	if OS == 'Lin':
 		urllib.urlretrieve('http://dl.google.com/android/android-sdk_r16-linux.tgz', 'SDK.tgz')
-		os.system(ScriptDir + "/7za x -y SDK.tgz -o" + Home)
+		os.system(os.path.join(ScriptDir + "7za") + " x -y SDK.tgz -o" + Home)
 		os.system(ScriptDir + "/7za x -y " + Home + "/SDK.tar -o" + Home)
 		os.system("chmod 777 " + Home + "/android-sdk-linux/* -R")
 		os.system("cd " + Home + "/android-sdk-linux/tools")
 	elif OS == 'Mac':
-		urllib.urlretrieve('http://dl.google.com/android/android-sdk_r18-macosx.zip', Home + '/SDK.zip')
-		zipfile.ZipFile(Home + "/SDK.zip").extractall()
+		urllib.urlretrieve('http://dl.google.com/android/android-sdk_r18-macosx.zip', os.path.join(Home + 'SDK.zip'))
+		zipfile.ZipFile(os.path.join(Home + "SDK.zip")).extractall()
 	elif OS == 'Win':
-		urllib.urlretrieve('http://dl.google.com/android/installer_r18-windows.exe', Home + '/SDK.exe')
+		urllib.urlretrieve('http://dl.google.com/android/installer_r18-windows.exe', os.path.join(Home, 'SDK.exe'))
 		os.system("start " + Home + '/SDK.exe')
 		os.system("chmod 777 " + Home + "/android-sdk-macosx/* -R")
 		os.system("cd " + Home + "/android-sdk-macosx/tools")
@@ -1163,7 +1157,10 @@ def SDK():
 		os.system("./android &")
 
 def JDK():
-	Web.open('http://www.oracle.com/technetwork/java/javase/downloads/jdk-7u4-downloads-1591156.html')
+	if OS == 'Lin':
+		os.system("sudo apt-get install openjdk-6-jdk")
+	else:
+		Web.open('http://www.oracle.com/technetwork/java/javase/downloads/jdk-7u4-downloads-1591156.html')
 
 def BuildSource():
 	notebook = MainApp.notebook
@@ -1229,7 +1226,7 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 
 		
 	def NewSources(cmd, SourceFile):
-		f = open(Home + "/.SA/Device", "w")
+		f = open(os.path.join(Home, ".SA", "Device"), "w")
 		print >> f,SourceFile
 		SourceFile = SourceFile.replace('.py', '')
 		SourceFile = SourceFile.replace('\n', '')
@@ -1250,7 +1247,7 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 
 
 	global Force, Quiet, Local, Jobs
-	label = gtk.Label( _("Choose a specific device to build for:"))
+	label = gtk.Label( _("You can choose a specific device in the top bar.\n\n"))
 	vbox.pack_start(label, False, False, 0)
 	hbox = gtk.HBox()
 	#vbox.pack_start(hbox, False, False, 3)
@@ -1327,7 +1324,7 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 		MenuItem.connect("activate", NewSources, SourceFile)
 		MenuItem.show()
 
-	if os.path.exists(Home + "/.SA/Device"):
+	if os.path.exists(os.path.join(Home, ".SA", "Device")):
 		Text = open(Home + "/.SA/Device", "r")
 		Text = Text.readlines()[0]
 		NewSources("cmd", Text)
@@ -1368,7 +1365,7 @@ def DeCompile():
 	decname = []
 
 
-	for apk in find_files(ScriptDir + "/APK/IN/", '*.apk'):
+	for apk in find_files(os.path.join(ScriptDir, "APK", "IN"), '*.apk'):
 		name = os.path.basename(apk)
 		NameBtn = gtk.CheckButton(name)
 		NameBtn.connect("toggled", AddToList, decname, name, NameBtn)
@@ -1379,8 +1376,8 @@ def DeCompile():
 
 	comname = []
 
-	for dec in os.listdir(ScriptDir + "/APK/DEC/"):
-		name = ScriptDir + "/APK/DEC/" + dec
+	for dec in os.listdir(os.path.join(ScriptDir, "APK", "DEC")):
+		name = os.path.join(ScriptDir, "APK" , "DEC", dec)
 		NameBtn = gtk.CheckButton(dec)
 		NameBtn.connect("toggled", AddToList, comname, dec, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
@@ -1403,15 +1400,16 @@ def ExPackage():
 			Number = len(exname)
 			for num in range(0, Number):
 				APK = exname[num]
-				APKPath = ScriptDir + "/APK/IN/" + APK
-				DstDir = ScriptDir + "/APK/EX/" + APK.replace('.apk', '')
+				APKPath = os.path.join(ScriptDir, "APK", "IN", APK)
+				DstDir = os.path.join(ScriptDir, "APK", "EX", APK.replace('.apk', ''))
+				print APKPath
 				os.system(sz + " x -y -o%s %s" %(DstDir, APKPath))
 		elif RepackageButton.get_active():
 			Number = len(repname)
 			for num in range(0, Number):
 				Ex = repname[num]
-				DirPath = ScriptDir + "/APK/EX/" + Ex + "/*"
-				DstFile = ScriptDir + "/APK/OUT/Unsigned-" + Ex + ".apk"
+				DirPath = os.path.join(ScriptDir, "APK", "EX", Ex , "*")
+				DstFile = os.path.join(ScriptDir, "APK", "OUT", "Unsigned-" + Ex + ".apk")
 				os.system(sz + " a -y -tzip %s %s -mx9" %(DstFile, DirPath))
 	notebook = MainApp.notebook
 	ExPackWindow = window
@@ -1433,8 +1431,8 @@ def ExPackage():
 
 	repname = []
 
-	for ex in os.listdir(ScriptDir + "/APK/EX/"):
-		name = ScriptDir + "/APK/EX/" + ex
+	for ex in os.listdir(os.path.join(ScriptDir, "APK", "EX")):
+		name = os.path.join(ScriptDir, "APK", "EX", ex)
 		NameBtn = gtk.CheckButton(ex)
 		NameBtn.connect("toggled", AddToList, repname, ex, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
@@ -1456,14 +1454,15 @@ def Sign():
 		elif shared.get_active(): name = 'shared'
 		elif superuser.get_active(): name = 'superuser'
 		else: name = 'testkey'
-		key1 = ScriptDir + "/Utils/" + name + ".x509.pem"
-		key2 = ScriptDir + "/Utils/" + name + ".pk8"
+		key1 = os.path.join(ScriptDir, "Utils", name + ".x509.pem")
+		key2 = os.path.join(ScriptDir, "Utils", name + ".pk8")
 		Number = len(sign)
 		for num in range(0, Number):
 			APK = sign[num]
 			APKName = APK.replace('Unsigned-', '')
-			APK = ScriptDir + "/APK" + APK
-			APKName = ScriptDir + "/APK/OUT/Signed-" + os.path.basename(APK)
+			APKName = os.path.basename(APKName)
+			APK = os.path.join(ScriptDir, "APK", APK)
+			APKName = os.path.join(ScriptDir, "APK", "OUT", "Signed-" + APKName)
 			os.system("java -jar %s -w %s %s %s %s" %(SignJar, key1, key2, APK, APKName))
 		
 		
@@ -1624,8 +1623,9 @@ if not FirstRun == False:
 	callback("cmd", "1")
 
 
-
-
+if not os.path.exists(os.path.join(Home, ".SA", "Language")):
+	window.hide()
+	window2.show_all()
 gtk.main()
 
 
