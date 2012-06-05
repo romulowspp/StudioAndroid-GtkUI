@@ -54,4 +54,5 @@ Re-worked Resize option (Windows users: TEST PLEASE!)
 OS and 32/64 bits detection
 Build from Source can now finally build :D Using Build.sh
 Every Directory-dependent string should now work on windows, too!
+Added DEBUG option (In top-bar). Enable it and you will see the prints of the commands wich are executed.
 }}}
