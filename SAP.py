@@ -28,6 +28,15 @@ Home=os.path.expanduser('~')
 MyFile = os.path.abspath(sys.argv[0].replace(ScriptDir, ''))
 Cores = str(multiprocessing.cpu_count())
 
+if os.path.exists(os.path.join(ScriptDir, "debug")):
+	Debug = True
+	bug = "ON"
+else:
+	Debug = False
+	bug = "OFF"
+
+
+
 class Logger(object):
     def __init__(self):
         self.terminal = sys.stdout
@@ -63,6 +72,11 @@ def destroy(self, widget, data=None):
 def Restart(cmd):
 	python = sys.executable
 	os.execl(python, python, * sys.argv)
+
+def DebugOn(cmd):
+	f = open(os.path.join(ScriptDir, "debug"), "w")
+	f.close()
+	Restart("cmd")
 
 sz = os.path.join(ScriptDir, "7za")
 ApkJar = os.path.join(ScriptDir, "Utils", "apktool.jar")
@@ -226,6 +240,7 @@ print _("Cores = " + Cores)
 print _("Home = " + Home)
 print _("ScriptDir = " + ScriptDir)
 print _("File = " + sys.argv[0])
+print ("Debug = " + bug)
 
 
 
@@ -268,6 +283,10 @@ class MainApp():
 	RestartOption = gtk.MenuItem( _("Restart"))
 	RestartOption.connect("activate", Restart)
 	Options.append(RestartOption)
+
+	DebugOption = gtk.MenuItem( _("Debug") )
+	DebugOption.connect("activate", DebugOn)
+	Options.append(DebugOption)
 
 	menu.show_all()
 	
@@ -434,10 +453,11 @@ def Clean():
 		except (IOError, OSError):
 			pass
 	os.remove("log")
-	try:
-		os.remove("SAP.pyc")
-	except OSError:
-		pass
+	for x in ['SAP.pyc', 'debug']:
+		try:
+			os.remove(os.path.join(ScriptDir, x))
+		except OSError:
+			pass
 
 
 
@@ -739,6 +759,7 @@ def Resize():
 			if not os.path.exists(DstDir + Sub):
 				os.makedirs(DstDir + Sub)
 			print(Image + " -> " + DstFile + "\n")
+			if Debug == True: print("convert %s -resize %s %s" % (Image, Perc, DstFile))
 			os.system("convert %s -resize %s %s" % (Image, Perc, DstFile))
 		message = "You can find the resized images in Resized"
 		NewDialog("Resized", "You can find the resized images in Resized")
@@ -1343,6 +1364,7 @@ def DeCompile():
 						ApkDir = APK.replace('.apk', '')
 						APK = os.path.join(ScriptDir, "APK", "IN", APK)
 						OutDir = os.path.join(ScriptDir, "APK", "DEC", ApkDir)
+						if Debug == True: print("java -jar %s d -f %s %s" %(ApkJar, APK, OutDir))
 						os.system("java -jar %s d -f %s %s" %(ApkJar, APK, OutDir))
 						print("Decompile " + APK)
 		if CompileButton.get_active():
@@ -1353,7 +1375,7 @@ def DeCompile():
 					if dec == Dec :
 						ApkFolder = os.path.join(ScriptDir, "APK", "DEC", dec)
 						ApkName = os.path.join(ScriptDir, "APK", "OUT", "Unsigned-" + Dec + ".apk")
-						print("\n\n\njava -jar %s b -f %s %s\n\n\n" %(ApkJar, ApkFolder, ApkName))
+						if Debug == True: print("\njava -jar %s b -f %s %s\n" %(ApkJar, ApkFolder, ApkName))
 						os.system("java -jar %s b -f %s %s" %(ApkJar, ApkFolder, ApkName))
 	DeCompileWindow = window
 	notebook = MainApp.notebook
@@ -1403,14 +1425,14 @@ def ExPackage():
 				APKPath = os.path.join(ScriptDir, "APK", "IN", APK)
 				DstDir = os.path.join(ScriptDir, "APK", "EX", APK.replace('.apk', ''))
 				print APKPath
-				os.system(sz + " x -y -o%s %s" %(DstDir, APKPath))
+				os.system("%s x -y -o%s %s" %(sz, DstDir, APKPath))
 		elif RepackageButton.get_active():
 			Number = len(repname)
 			for num in range(0, Number):
 				Ex = repname[num]
 				DirPath = os.path.join(ScriptDir, "APK", "EX", Ex , "*")
 				DstFile = os.path.join(ScriptDir, "APK", "OUT", "Unsigned-" + Ex + ".apk")
-				os.system(sz + " a -y -tzip %s %s -mx9" %(DstFile, DirPath))
+				os.system("%s a -y -tzip %s %s -mx9" %(sz, DstFile, DirPath))
 	notebook = MainApp.notebook
 	ExPackWindow = window
 	vbox = gtk.VBox()
