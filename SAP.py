@@ -16,17 +16,58 @@ import shutil
 import zipfile
 import py_compile
 import threading
-from gettext import *
+import gettext
+from locale import setlocale, LC_ALL
 import time
 import multiprocessing
 from Source.SourceP500 import *
 from Source.SourceStock import *
-_ = gettext
+_ = gettext.gettext
 
 ScriptDir=os.path.abspath(os.path.dirname(sys.argv[0]))
 Home=os.path.expanduser('~')
 MyFile = os.path.abspath(sys.argv[0].replace(ScriptDir, ''))
 Cores = str(multiprocessing.cpu_count())
+
+
+if not os.path.exists(os.path.join(Home, ".SA", "Language")):
+	def PickLanguage(cmd):
+		global LangSet
+		f = open(os.path.join(Home, ".SA", "Language"), "w")
+		f.close()
+		f = open(os.path.join(Home, ".SA", "Language"), "w")
+		global sett
+		if FrBtn.get_active(): f.write("Fr")
+		if EnBtn.get_active(): f.write("En")
+		if ItBtn.get_active(): f.write("En")
+		window2.destroy()
+		Restart("cmd")
+	window2 = gtk.Window(gtk.WINDOW_TOPLEVEL)
+	window2.set_position(gtk.WIN_POS_MOUSE)
+	window2.set_resizable(False)
+	window2.set_title("Choose language")
+	vbox = gtk.VBox(False, 0)
+	window2.add(vbox)
+	FrBtn = gtk.RadioButton(None, "Francais")
+	EnBtn = gtk.RadioButton(FrBtn, "English")
+	ItBtn = gtk.RadioButton(FrBtn, "Italiano")
+	vbox.pack_start(FrBtn)
+	vbox.pack_start(EnBtn)
+	vbox.pack_start(ItBtn)
+	
+	ChooseBtn = gtk.Button("Choisissez | Choose | Scegli")
+	vbox.pack_start(ChooseBtn)
+	ChooseBtn.connect("clicked", PickLanguage)
+
+gettext.textdomain("default")
+gettext.bindtextdomain ("default", os.path.join(ScriptDir + "lang"))
+gettext.bind_textdomain_codeset("default", 'UTF-8')
+setlocale(LC_ALL, "")
+LOCALE_DIR = os.path.join(ScriptDir, "lang")
+
+
+
+# Debug
 
 if os.path.exists(os.path.join(ScriptDir, "debug")):
 	Debug = True
@@ -35,7 +76,7 @@ else:
 	Debug = False
 	bug = "OFF"
 
-
+# Double output
 
 class Logger(object):
     def __init__(self):
@@ -47,6 +88,8 @@ class Logger(object):
         self.log.write(message)  
 
 sys.stdout = Logger()
+
+# OS Determination
 
 if sys.platform == 'linux2':
 	OS = 'Lin'
@@ -82,7 +125,10 @@ sz = os.path.join(ScriptDir, "7za")
 ApkJar = os.path.join(ScriptDir, "Utils", "apktool.jar")
 SignJar = os.path.join(ScriptDir, "Utils", "signapk.jar")
 ZipalignFile = os.path.join(ScriptDir, "Utils", "zipalign")
+SmaliJar = os.path.join(ScriptDir, "Utils", "smali-1.3.2.jar")
+BaksmaliJar = os.path.join(ScriptDir, "Utils", "baksmali-1.3.2.jar")
 Web = webbrowser.get()
+
 
 def callback(widget, option):
 	if option == 'Cl':
@@ -113,6 +159,8 @@ def callback(widget, option):
 		Zipalign()
 	elif option == 'Inst':
 		Install()
+	elif option == 'BakSmali':
+		BakSmali()
 	elif option == 'Log':
 		Log()
 	elif option == 'change':
@@ -122,7 +170,7 @@ def callback(widget, option):
 	elif option == 'upd':
 		Update()
 	else :
-		print("This option is not defined yet, SORRY!")
+		print("%s is not defined yet, SORRY!" % option)
 
 def NewDialog(Title, Text):
 	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK)
@@ -176,7 +224,7 @@ def NewPage(Label):
 	box.pack_end(closebtn, False, False)
 	return box
 
-for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance"]:
+for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance/IN", "Advance/OUT"]:
 	try:
 		os.makedirs(ScriptDir + DIR)
 	except os.error:
@@ -189,36 +237,6 @@ if not os.path.exists(os.path.join(Home, ".SA")):
 	NewDialog( _("First Run"), _("Hi there! It seems this is your first time to run StudioAndroid!\nPlease note this tool still has a long way to go,\n and I need testers and reporters...\n So please publish your LOG!") )
 else:
 	FirstRun = False
-
-if not os.path.exists(os.path.join(Home, ".SA", "Language")):
-	LangSet = '0'
-	def PickLanguage(cmd):
-		global LangSet
-		f = open(os.path.join(Home, ".SA", "Language"), "w")
-		f.close()
-		f = open(os.path.join(Home, ".SA", "Language"), "w")
-		global sett
-		if FrBtn.get_active(): f.write("Fr")
-		if EnBtn.get_active(): f.write("En")
-		if ItBtn.get_active(): f.write("En")
-		window2.destroy()
-		Restart("cmd")
-	window2 = gtk.Window(gtk.WINDOW_TOPLEVEL)
-	window2.set_position(gtk.WIN_POS_MOUSE)
-	window2.set_resizable(False)
-	window2.set_title("Choose language")
-	vbox = gtk.VBox(False, 0)
-	window2.add(vbox)
-	FrBtn = gtk.RadioButton(None, "Francais")
-	EnBtn = gtk.RadioButton(FrBtn, "English")
-	ItBtn = gtk.RadioButton(FrBtn, "Italiano")
-	vbox.pack_start(FrBtn)
-	vbox.pack_start(EnBtn)
-	vbox.pack_start(ItBtn)
-	
-	ChooseBtn = gtk.Button("Choisissez | Choose | Scegli")
-	vbox.pack_start(ChooseBtn)
-	ChooseBtn.connect("clicked", PickLanguage)
 
 
 window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -416,13 +434,9 @@ class MainApp():
 	image.show()
 	AdvanceVBox.pack_start(image)
 
-	MainOpt19 = gtk.Button("Smali")
-	MainOpt19.connect("clicked", callback, "19")
+	MainOpt19 = gtk.Button("(Bak)Smali")
+	MainOpt19.connect("clicked", callback, "BakSmali")
 	AdvanceVBox.pack_start(MainOpt19, False, False, 10)
-
-	MainOpt20 = gtk.Button("BakSmali")
-	MainOpt20.connect("clicked", callback, "20")
-	AdvanceVBox.pack_start(MainOpt20, False, False, 10)
 
 	MainOpt21 = gtk.Button("ODEX")
 	MainOpt21.connect("clicked", callback, "ODEX")
@@ -510,19 +524,19 @@ def Utils():
 		if OS == 'Win':
 			os.makedirs(Home + "/Utils/")
 			Copy("/Utils")
-			print("Sorry, windows does not support $PATH modifications from cmd...\nInstead, I will open up a site for you")
-			print("That site contains a HOWTO on adding a directory to the PATH.")
-			print("Add this directory: " + Home + "\Utils")
+			print _("Sorry, windows does not support $PATH modifications from cmd...\nInstead, I will open up a site for you")
+			print _("That site contains a HOWTO on adding a directory to the PATH.")
+			print _("Add this directory: " + Home + "\Utils")
 			if button10.get_active():
 				ImageMagick = '[2] Open link and install imagemagick'
 			else:
 				ImageMagick = ''
-			print("\n Options: [n] NVM  [1] Open link" + ImageMagick + "\n")
+			print _("\n Options: [n] NVM  [1] Open link" + ImageMagick + "\n")
 			q = raw_input("Choose an option :  ")
 			if not q == 'n':
 				Web.open("http://www.computerhope.com/issues/ch000549.htm")
 			if q == '2':
-				Web.open("ftp://ftp.imagemagick.org/pub/ImageMagick/binaries/ImageMagick-6.7.6-9-Q16-windows-dll.exe")
+				Web.open("http://www.imagemagick.org/download/binaries/ImageMagick-6.7.7-5-Q16-windows-dll.exe")
 		KillPage("cmd", vbox)
 
 	notebook = MainApp.notebook
@@ -534,7 +548,7 @@ def Utils():
 	OptionsTable = gtk.Table(1, 3, True)
 	UtilsTable = gtk.Table(11, 2, True)
 
-        label = gtk.Label("Hey there!\n Please select the tools you want to install.\nImageMagick is needed for all image tools I included!")
+        label = gtk.Label( _("Hey there!\n Please select the tools you want to install.\nImageMagick is needed for all image tools I included!") )
 	label.set_justify(gtk.JUSTIFY_CENTER)
 	vbox.pack_start(label, False, False, 0)
 
@@ -562,14 +576,14 @@ def Utils():
 	button8 = gtk.CheckButton("BakSmali")
 	UtilsTable.attach(button8, 0, 1, 7, 8)
 
-	button9 = gtk.CheckButton("ALL!")
+	button9 = gtk.CheckButton( _("ALL!") )
 	button9.connect("toggled", SetAll)
 	UtilsTable.attach(button9, 0, 1, 9, 10)
 
 	button10 = gtk.CheckButton("ImageMagick")
 	UtilsTable.attach(button10, 1, 2, 0, 1)
 
-	buttonInstall = gtk.Button("Install")
+	buttonInstall = gtk.Button( _("Install") )
 	buttonInstall.connect("clicked", Install)
 	UtilsTable.attach(buttonInstall, 0, 2, 10, 11)
 	
@@ -577,7 +591,7 @@ def Utils():
 	vbox.pack_start(UtilsTable, False, False, 0)
 	vbox.show_all()
 
-	UtilsLabel = NewPage("Install Utils")
+	UtilsLabel = NewPage( _("Install Utils") )
 	UtilsLabel.show_all()
 
 	notebook.insert_page(InstUtilsTable, UtilsLabel, 5)
@@ -614,8 +628,8 @@ def CopyFrom():
 	vbox = gtk.VBox()
 	notebook = MainApp.notebook
 
-	label = gtk.Label("""This tool copies files existing in a directory FROM an other directory.
-			Can be handy for porting themes and such\n\nMake sure both directories have the same structure!\n\n\n""")
+	label = gtk.Label( _("""This tool copies files existing in a directory FROM an other directory.
+			Can be handy for porting themes and such\n\nMake sure both directories have the same structure!\n\n\n""") )
 
 	CopyFromTable = gtk.Table(4, 2, True)
 	CopyFromTable.set_row_spacings(10)
@@ -626,7 +640,7 @@ def CopyFrom():
 	ToDir = gtk.Entry()
 	ToDir.set_text(Home + "/")
 	ToDir.set_size_request(30, 25)
-	ToDirLabel = gtk.Label("Enter the directory you want to copy the files TO")
+	ToDirLabel = gtk.Label( _("Enter the directory you want to copy the files TO") )
 
 	CopyFromTable.attach(ToDir, 0, 1, 0, 1, yoptions=gtk.EXPAND)
 	CopyFromTable.attach(ToDirLabel, 1, 2, 0, 1)
@@ -634,7 +648,7 @@ def CopyFrom():
 	FromDir = gtk.Entry()
 	FromDir.set_text(Home + "/")
 	FromDir.set_size_request(30, 25)
-	FromDirLabel = gtk.Label("Enter the directory you want to copy the files FROM")
+	FromDirLabel = gtk.Label( _("Enter the directory you want to copy the files FROM") )
 
 	CopyFromTable.attach(FromDir, 0, 1, 1, 2, yoptions=gtk.EXPAND)
 	CopyFromTable.attach(FromDirLabel, 1, 2, 1, 2)
@@ -642,7 +656,7 @@ def CopyFrom():
 	Ext = gtk.Entry()
 	Ext.set_size_request(30, 25)
 	Ext.set_text(".")
-	ExtLabel = gtk.Label("Enter the extension of the files you want to copy")
+	ExtLabel = gtk.Label( _("Enter the extension of the files you want to copy") )
 
 	CopyFromTable.attach(Ext, 0, 1, 2, 3, yoptions=gtk.EXPAND)
 	CopyFromTable.attach(ExtLabel, 1, 2, 2, 3)
@@ -651,7 +665,7 @@ def CopyFrom():
 	StartButton.connect("clicked", Start)
 	CopyFromTable.attach(StartButton, 0, 2, 3, 4)
 
-	CopyFromLabel = NewPage("CopyFrom")
+	CopyFromLabel = NewPage( _("CopyFrom") )
 	CopyFromLabel.show_all()
 	
 	notebook.insert_page(vbox, CopyFromLabel, 4)
@@ -762,7 +776,7 @@ def Resize():
 			if Debug == True: print("convert %s -resize %s %s" % (Image, Perc, DstFile))
 			os.system("convert %s -resize %s %s" % (Image, Perc, DstFile))
 		message = "You can find the resized images in Resized"
-		NewDialog("Resized", "You can find the resized images in Resized")
+		NewDialog( _("Resized") , _("You can find the resized images in Resized") )
 		KillPage(cmd, vbox)
 		
 		
@@ -773,7 +787,7 @@ def Resize():
 	notebook = MainApp.notebook
 	
 
-	label = gtk.Label("This tool can be used to resize images, but also APK's :D\n\nChoose an option:\n\n")
+	label = gtk.Label( _("This tool can be used to resize images, but also APK's :D\n\nChoose an option:\n\n") )
 	vbox.pack_start(label, False, False, 20)
 	sw.add_with_viewport(vbox)
 
@@ -788,7 +802,7 @@ def Resize():
 	ResizePercentageBox.set_text("%")
 	ResizePercentageBox.set_size_request(0, 30)
 
-	ResizePercentageLabel = gtk.Label("Enter the resize percentage 0-100 %")
+	ResizePercentageLabel = gtk.Label( _("Enter the resize percentage 0-100 %") )
 
 	ResizeDirBox = gtk.Entry()
 	ResizeDirBox.set_text(ScriptDir + "/")
@@ -1177,9 +1191,11 @@ def SDK():
 		print("\n\n\n A popup will show. This is the SDK installer, configure it!\n\n\n")
 		os.system("./android &")
 
+
+
 def JDK():
 	if OS == 'Lin':
-		os.system("sudo apt-get install openjdk-6-jdk")
+		os.system("sudo apt-get install openjdk-7-jdk")
 	else:
 		Web.open('http://www.oracle.com/technetwork/java/javase/downloads/jdk-7u4-downloads-1591156.html')
 
@@ -1607,6 +1623,40 @@ def Install():
 	window.show_all()
 	notebook.set_current_page(4)
 
+def BakSmali():
+	def StartBaksmali(cmd):
+		for dexfile in dex:
+			dexfilebase = os.path.basename(dexfile)
+			dexname = dexfilebase.replace('.dex', '')
+			dexname = dexname.replace('.odex', '')
+			outdir = os.path.join(ScriptDir, "Advance", "OUT", dexname)
+			print _("Baksmaling %s to %s" %(dexfile, outdir))
+			os.system("java -jar %s %s -o %s" %(BaksmaliJar, dexfile, outdir))
+	notebook = MainApp.notebook
+	vbox = gtk.VBox()
+	label = gtk.Label( _("Choose a DEX file from %s to BakSmali:" % os.path.join(ScriptDir, "Advance", "IN")))
+	vbox.pack_start(label, False, False, 0)
+	dex = []
+
+
+	for Dex in find_files(os.path.join(ScriptDir, "Advance", "IN"), "*dex"):
+		Name = Dex.replace(os.path.join(ScriptDir, "Advance", "IN", ''), '')
+		NameBtn = gtk.CheckButton(Name)
+		NameBtn.connect("clicked", AddToList, dex, Dex, NameBtn)
+		vbox.pack_start(NameBtn, False, False, 0)
+
+	BakSmaliBtn = gtk.Button("Baksmali")
+	BakSmaliBtn.connect("clicked", StartBaksmali)
+	vbox.pack_start(BakSmaliBtn, False, False, 3)
+
+	SmaliLabel = NewPage("BakSmali")
+	SmaliLabel.show_all()
+	notebook.insert_page(vbox, SmaliLabel, 4)
+	vbox.show_all()
+	window.show_all()
+	notebook.set_current_page(4)
+	
+
 def Changelog():
 	ChangeWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
 	ChangeWindow.set_size_request(700, 600)
@@ -1624,15 +1674,22 @@ def Changelog():
 def Log():
 	LogWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
 	LogWindow.set_size_request(700, 600)
-	LogWindow.set_title("StudioAndroid - Changelog")
+	LogWindow.set_title("StudioAndroid - Log")
+	vbox = gtk.VBox(False, 4)
 	sw = gtk.ScrolledWindow()
-	LogWindow.add(sw)
+	vbox.pack_start(sw)
+	LogWindow.add(vbox)
 
 	log = open(ScriptDir + "/log", "r")
 	Text = log.read()
 	Label = gtk.Label(Text)
+	Label.set_selectable(True)
 
 	sw.add_with_viewport(Label)
+	DeleteButton = gtk.Button( _("Delete log") )
+	DeleteButton.connect("clicked", os.remove(os.path.join(ScriptDir, "log")) )
+	vbox.pack_start(DeleteButton, False)
+	vbox.show_all()
 	LogWindow.show_all()
 
 def Help():

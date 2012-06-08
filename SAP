@@ -8,7 +8,6 @@ then
 	ScriptCommand=SAP.pyc
 fi
 
-Version=0.70
 
 python --version
 
@@ -19,16 +18,7 @@ fi
 
 clear
 
-echo """
-                         ###     StudioAndroid      ###
-                         ###     GTK GUI Build      ###
-                                      v$Version
-
-"""
-
 python $ScriptDir/$ScriptCommand
-
-True=$( grep -w 'FirstRun = True' $ScriptDir/SAP.py )
 
 
 
