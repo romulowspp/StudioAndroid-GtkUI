@@ -56,3 +56,14 @@ Build from Source can now finally build :D Using Build.sh
 Every Directory-dependent string should now work on windows, too!
 Added DEBUG option (In top-bar). Enable it and you will see the prints of the commands wich are executed.
 }}}
+
+%7
+{{{
+Basic Baksmali
+Log can now be copied (thanks Lycan)
+Log now shows "Log" as title (typo)
+Inbuilt Language check
+Translated more strings for KeitG (Translator)
+Translate commands almost done
+Some small changes and bugfixes
+}}}
