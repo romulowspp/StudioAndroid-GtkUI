@@ -161,6 +161,10 @@ def callback(widget, option):
 		Install()
 	elif option == 'BakSmali':
 		BakSmali()
+	elif option == 'Odex':
+		Odex()
+	elif option == 'Deodex':
+		Deodex()
 	elif option == 'Log':
 		Log()
 	elif option == 'change':
@@ -188,15 +192,17 @@ def Restart(cmd):
 def KillPage(cmd, child):
 	notebook = MainApp.notebook
 	page = notebook.page_num(child)
-	total = notebook.get_n_pages()
-        notebook.remove_page(page)
+	if page == -1:
+		page = notebook.get_n_pages() - 1
+	notebook.remove_page(4)
 	child.destroy()
 
-def AddToList(cmd, List, name, NameBtn):
-	if not name in List:
-		List.append(name)
-	if not NameBtn.get_active():
-		List.remove(name)
+def AddToList(cmd, List, name, NameBtn, Single=False):
+	if Single==False:
+		if not name in List:
+			List.append(name)
+		if not NameBtn.get_active():
+			List.remove(name)
 
 
 def find_files(directory, pattern):
@@ -211,20 +217,20 @@ zipfile.ZipFile(os.path.join(ScriptDir, "Utils.zip")).extractall()
 if not OS == 'Win':
 	os.system("chmod 755 " + os.path.join(ScriptDir, "Utils") + "/*")
 
-def NewPage(Label):
+def NewPage(Label, parent):
 	box = gtk.HBox()
 	label = gtk.Label(Label)
 	closebtn = gtk.Button()
 	image = gtk.Image()
 	image.set_from_stock(gtk.STOCK_CLOSE, gtk.ICON_SIZE_MENU)
-	closebtn.connect("clicked", KillPage, box)
+	closebtn.connect("clicked", KillPage, parent)
 	closebtn.set_image(image)
 	closebtn.set_relief(gtk.RELIEF_NONE)
 	box.pack_start(label, False, False)
 	box.pack_end(closebtn, False, False)
 	return box
 
-for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance/IN", "Advance/OUT"]:
+for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance/Smali/IN", "/Advance/Smali/Smali", "/Advance/Smali/OUT", "/Advance/ODEX/IN", "/Advance/ODEX/CURRENT", "/Advance/ODEX/WORKING", "/Advance/ODEX/OUT"]:
 	try:
 		os.makedirs(ScriptDir + DIR)
 	except os.error:
@@ -313,8 +319,7 @@ class MainApp():
 	notebook = gtk.Notebook()
 	notebook.set_tab_pos(gtk.POS_TOP)
 	vbox.pack_start(notebook)
-	notebook.set_scrollable(True)	
-	#notebook.set_property('homogeneous', True)
+	notebook.set_scrollable(True)
 
         notebook.show()
 
@@ -439,15 +444,15 @@ class MainApp():
 	AdvanceVBox.pack_start(MainOpt19, False, False, 10)
 
 	MainOpt21 = gtk.Button("ODEX")
-	MainOpt21.connect("clicked", callback, "ODEX")
+	MainOpt21.connect("clicked", callback, "Odex")
 	AdvanceVBox.pack_start(MainOpt21, False, False, 10)
 
 	MainOpt22 = gtk.Button("DE-ODEX")
-	MainOpt22.connect("clicked", callback, "22")
+	MainOpt22.connect("clicked", callback, "Deodex")
 	AdvanceVBox.pack_start(MainOpt22, False, False, 10)
 
 	MainOpt23 = gtk.Button("Aroma Menu")
-	MainOpt23.connect("clicked", callback, "23")
+	MainOpt23.connect("clicked", callback, "Aroma")
 	AdvanceVBox.pack_start(MainOpt23, False, False, 10)
 
 	notebook.insert_page(AdvanceVBox, AdvanceLabel, 4)
@@ -462,10 +467,7 @@ class MainApp():
 
 def Clean():
 	for tree in ['APK', 'Resize', 'Resized', 'Resizing', 'Advance', 'Utils', 'Theme']:
-		try:
-			shutil.rmtree(tree)
-		except (IOError, OSError):
-			pass
+		shutil.rmtree(tree, True)
 	os.remove("log")
 	for x in ['SAP.pyc', 'debug']:
 		try:
@@ -591,35 +593,27 @@ def Utils():
 	vbox.pack_start(UtilsTable, False, False, 0)
 	vbox.show_all()
 
-	UtilsLabel = NewPage( _("Install Utils") )
+	UtilsLabel = NewPage( _("Install Utils") , UtilsTable)
 	UtilsLabel.show_all()
 
-	notebook.insert_page(InstUtilsTable, UtilsLabel, 5)
+	notebook.insert_page(InstUtilsTable, UtilsLabel)
 	window.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
+	
 
 
 	
 
 def CopyFrom():
 	def Start(cmd):
-		FromDir2 = FromDir.get_text()
-		if not FromDir2.endswith("/"):
-			FromDir3 = FromDir2 + "/"
-		else :
-			FromDir3 = FromDir2
-		ToDir2 = ToDir.get_text()
-		if not ToDir2.endswith("/"):
-			ToDir3 = ToDir2 + "/"
-		else :
-			ToDir3 = ToDir2
-		Ext2 = Ext.get_text()
-		print("Copying files FROM " + FromDir3 + " to " + ToDir3 + " With extension " + Ext2)
-		for ToFile in find_files(ToDir3, "*" + Ext2):
-			filename = ToFile.replace(ToDir3, '')
-			for FromFile in find_files(FromDir3, filename):
-				print("Copy " + FromFile + " to " + ToFile)
-				shutil.copy(FromFile, ToFile)
+		Ext = ExtBox.get_text()
+		print("Copying files FROM " + FromDir + " to " + ToDir + " With extension " + Ext)
+		for ToFile in find_files(ToDir, "*" + Ext):
+			filename = ToFile.replace(ToDir, FromDir)
+			if os.path.exists(filename):
+				print _("Copying %s to %s" %(filename, ToFile))
+				shutil.copy(filename, ToFile)
+			
 		KillPage(cmd, vbox)
 
 	CopyFromWindow = window
@@ -631,53 +625,65 @@ def CopyFrom():
 	label = gtk.Label( _("""This tool copies files existing in a directory FROM an other directory.
 			Can be handy for porting themes and such\n\nMake sure both directories have the same structure!\n\n\n""") )
 
-	CopyFromTable = gtk.Table(4, 2, True)
-	CopyFromTable.set_row_spacings(10)
-
 	vbox.pack_start(label, False, False, 0)
-	vbox.pack_start(CopyFromTable, False, False, 0)
 
-	ToDir = gtk.Entry()
-	ToDir.set_text(Home + "/")
-	ToDir.set_size_request(30, 25)
-	ToDirLabel = gtk.Label( _("Enter the directory you want to copy the files TO") )
+	def Choose(cmd, DirChooser, kind):
+		DirChooser.set_current_folder(ScriptDir)
+		if kind == 'ToDir':
+			global ToDir
+			response = DirChooser.run()
+			if response == gtk.RESPONSE_OK:
+				ToDir = DirChooser.get_filename()
+		elif kind == 'FromDir':
+			global FromDir
+			response = DirChooser.run()
+			if response == gtk.RESPONSE_OK:
+				FromDir = DirChooser.get_filename()
+		DirChooser.destroy()
 
-	CopyFromTable.attach(ToDir, 0, 1, 0, 1, yoptions=gtk.EXPAND)
-	CopyFromTable.attach(ToDirLabel, 1, 2, 0, 1)
+	ToDirBtn = gtk.Button( _("Enter the directory you want to copy the files TO") )
+	ToDirDial = gtk.FileChooserDialog(title=None,action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                  	buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
 
-	FromDir = gtk.Entry()
-	FromDir.set_text(Home + "/")
-	FromDir.set_size_request(30, 25)
-	FromDirLabel = gtk.Label( _("Enter the directory you want to copy the files FROM") )
+	ToDirBtn.connect("clicked", Choose, ToDirDial, 'ToDir')
+	vbox.pack_start(ToDirBtn, False, False, 0)
 
-	CopyFromTable.attach(FromDir, 0, 1, 1, 2, yoptions=gtk.EXPAND)
-	CopyFromTable.attach(FromDirLabel, 1, 2, 1, 2)
 
-	Ext = gtk.Entry()
-	Ext.set_size_request(30, 25)
-	Ext.set_text(".")
+	FromDirBtn = gtk.Button(_("Enter the directory you want to copy the files FROM") )
+	FromDirDial = gtk.FileChooserDialog(title=None,action=gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                                  	buttons=(gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+
+	FromDirBtn.connect("clicked", Choose, FromDirDial, 'FromDir')
+	vbox.pack_start(FromDirBtn, False, False, 0)
+
+	hbox = gtk.HBox()
+
+	ExtBox = gtk.Entry()
+	ExtBox.set_size_request(80, 25)
+	ExtBox.set_text(".")
 	ExtLabel = gtk.Label( _("Enter the extension of the files you want to copy") )
+	hbox.pack_start(ExtBox, False, False, 3)
+	hbox.pack_start(ExtLabel, False, False, 45)
 
-	CopyFromTable.attach(Ext, 0, 1, 2, 3, yoptions=gtk.EXPAND)
-	CopyFromTable.attach(ExtLabel, 1, 2, 2, 3)
+	vbox.pack_start(hbox, False, False, 0)
 
 	StartButton = gtk.Button("CopyFrom!")
 	StartButton.connect("clicked", Start)
-	CopyFromTable.attach(StartButton, 0, 2, 3, 4)
 
-	CopyFromLabel = NewPage( _("CopyFrom") )
+	vbox.pack_start(StartButton, False, False, 30)
+
+	CopyFromLabel = NewPage( _("CopyFrom"), vbox )
 	CopyFromLabel.show_all()
 	
-	notebook.insert_page(vbox, CopyFromLabel, 4)
+	notebook.insert_page(vbox, CopyFromLabel)
 	CopyFromWindow.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def Resize():
 	def StartResize(cmd):
 		DstDir = os.path.join(ScriptDir, "Resized")
 		if NormalResize.get_active():
 			Perc = ResizePercentageBox.get_text()
-			#Perc = int(Perc)
 			if not Perc.endswith("%"):
 				Perc = Perc + "%"
 			InDir = ResizeDirBox.get_text()
@@ -877,13 +883,13 @@ def Resize():
 	ResizeStartButton.connect("clicked", StartResize)
 	vbox.pack_start(ResizeStartButton, False, False, 15)
 
-	ResizeLabel = NewPage("Resize")
+	ResizeLabel = NewPage("Resize", sw)
 	ResizeLabel.show_all()
 
-	notebook.insert_page(sw, ResizeLabel, 4)
+	notebook.insert_page(sw, ResizeLabel)
 
 	ResizeWindow.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def Theme():
 	def ShowColor(cmd):
@@ -913,7 +919,7 @@ def Theme():
 			os.system("mogrify -colorize " + Red + "," + Green + "," + Blue + " " + Image1)
 	ThemeWindow = window	
 	SrcDir = os.path.join(ScriptDir, "Theme")
-	ThemeLabel = gtk.Label("Place the images you want to theme inside " + SrcDir)
+	ThemeLabel = gtk.Label( _("Place the images you want to theme inside " + SrcDir))
 	notebook = MainApp.notebook
 
 	os.makedirs(SrcDir)
@@ -926,25 +932,25 @@ def Theme():
 
 	RedBox = gtk.Entry()
 	RedBox.set_text("22")
-	RedLabel = gtk.Label("Enter the RED value (0-100)")
+	RedLabel = gtk.Label( _("Enter the RED value (0-100)") )
 	ColorTable.attach(RedBox, 0, 1, 0, 1)
 	ColorTable.attach(RedLabel, 1, 2, 0, 1)
 
 	GreenBox = gtk.Entry()
 	GreenBox.set_text("66")
-	GreenLabel = gtk.Label("Enter the GREEN value (0-100)")
+	GreenLabel = gtk.Label( _("Enter the GREEN value (0-100)") )
 	ColorTable.attach(GreenBox, 0, 1, 1, 2)
 	ColorTable.attach(GreenLabel, 1, 2, 1, 2)
 
 	BlueBox = gtk.Entry()
 	BlueBox.set_text("77")
-	BlueLabel = gtk.Label("Enter the BLUE value (0-100)")
+	BlueLabel = gtk.Label( _("Enter the BLUE value (0-100)") )
 	ColorTable.attach(BlueBox, 0, 1, 2, 3)
 	ColorTable.attach(BlueLabel, 1, 2, 2, 3)
 	
 
 
-	ColorButton = gtk.Button("Show Color")
+	ColorButton = gtk.Button( _("Show Color") )
 	ColorButton.connect("clicked", ShowColor)
 
 
@@ -957,25 +963,22 @@ def Theme():
 	Draw.show()
 	vbox.pack_start(Draw, False, False, 0)
 
-	StartButton = gtk.Button("Start theming!")
+	StartButton = gtk.Button( _("Start theming!") )
 	StartButton.connect("clicked", StartTheming)
 	vbox.pack_start(StartButton, False, False, 15)
 
-	ThemeLabel = NewPage("Theme")
+	ThemeLabel = NewPage("Theme", vbox)
 	ThemeLabel.show_all()
 
-	notebook.insert_page(vbox, ThemeLabel, 4)
+	notebook.insert_page(vbox, ThemeLabel)
 
 	ThemeWindow.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 	
 
 def PrepareBuilding():
 	def Prepare(cmd):
-		MessageLabel = gtk.Label("Please check the terminal for further progress...")
-		box.pack_start(MessageLabel, False, False, 40)
-		PrepareWindow.show_all()
-		PrepareWindow.queue_draw()
+		NewDialog("Info", "Please check the terminal for further progress.")
 		os.system("""sudo add-apt-repository ppa:fkrull/deadsnakes
 sudo apt-get update &
 sudo apt-get upgrade &
@@ -1165,11 +1168,11 @@ g++-multilib mingw32 openjdk-6-jdk tofrodos libxml2-utils xsltproc zlib1g-dev:i3
 	ButtonPrepare = gtk.Button("Prepare to Build")
 	ButtonPrepare.connect("clicked", Prepare)
 	box.pack_start(ButtonPrepare, False, False, 20)
-	PrepareLabel = NewPage("Prepare")
+	PrepareLabel = NewPage("Prepare", box)
 	PrepareLabel.show_all()
-	notebook.insert_page(box, PrepareLabel, 4)
+	notebook.insert_page(box, PrepareLabel)
 	PrepareWindow.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def SDK():
 	print("\n\n Downloading SDK installer!\n\n")
@@ -1200,7 +1203,8 @@ def JDK():
 		Web.open('http://www.oracle.com/technetwork/java/javase/downloads/jdk-7u4-downloads-1591156.html')
 
 def BuildSource():
-	notebook = MainApp.notebook
+	notebook = MainApp.notebook	
+	global vbox
 	vbox = gtk.VBox()
 
 	def StartSync(cmd):
@@ -1213,20 +1217,23 @@ def BuildSource():
 			switches = switches + " -l"
 		if Jobs.get_active():
 			switches = switches +  " -j" + Cores
-		os.system("""cd
-mkdir -p %s
-cd %s
-%s
-repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
+		os.chdir(Home)
+		if not os.path.exists(SourceDir):
+			os.makedirs(SourceDir)
+		os.chdir(SourceDir)
+		print >>open(os.path.join(ScriptDir, "Source", "repocmd"), "w"), repocmd
+		print >>open(os.path.join(ScriptDir, "Source", "syncswitches"), "w"), switches
+		
+		os.system(os.path.join(ScriptDir, "Source", "Build.sh") + ' sync &')
 		StartBuild("cmd")
 	def StartBuild(cmd):
 		if not os.path.exists(SourceDir + "/.repo"):
 			NewDialog("ERROR", SourceDir + " does not exist!\nPress SYNC instead.")
 		else:
-			BuildLabel = NewPage("Build")
-			BuildLabel.show_all()
-			notebook.remove_page(4)
+			notebook.remove_page(notebook.get_n_pages() -1)
 			sw = gtk.ScrolledWindow()
+			BuildLabel = NewPage("Build", sw)
+			BuildLabel.show_all()
 			vbox = gtk.VBox()
 			Std = gtk.RadioButton(None, "Std")
 
@@ -1256,10 +1263,20 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 			window.show_all()
 			notebook.set_current_page(4)
 	def Make(cmd, GroupStandard):
+		switches = ''
+		if Force2.get_active():
+			switches = switches + " -f"
+		if Quiet2.get_active():
+			switches = switches + " -q"
+		if Local2.get_active():
+			switches = switches + " -l"
+		if Jobs2.get_active():
+			switches = switches +  " -j" + Cores
 		os.chdir(SourceDir)
 		active = str([r for r in GroupStandard.get_group() if r.get_active()][0].get_label().replace('--', '_'))
 		active = active.replace(' ', '')
-		os.system(os.path.join(ScriptDir, "Source", "Build.sh") + " " + active)			
+		print >>open(os.path.join(ScriptDir, "Source", "makeswitches"), "w"), switches
+		os.system(os.path.join(ScriptDir, "Source", "Build.sh") + " make " + active)			
 
 		
 	def NewSources(cmd, SourceFile):
@@ -1280,7 +1297,7 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 			global repocmd, Name, SourceDir
 			repocmd = URL[num]
 			Name = Sources[num]
-			SourceDir = Home + "/WORKING_" + Name
+			SourceDir = os.path.join(Home, "WORKING_" + Name)
 
 
 	global Force, Quiet, Local, Jobs
@@ -1311,36 +1328,54 @@ repo sync %s""" %(SourceDir, SourceDir, repocmd, switches))
 		window.show_all()
 	SetPage()
 
-	hbox = gtk.HBox()
+	hbox = gtk.HBox(False)
+	vbox1 = gtk.VBox()
+	vbox5 = gtk.VBox()
 
 	SyncButton = gtk.Button("Sync")
 	SyncButton.connect("clicked", StartSync)
-	hbox.pack_start(SyncButton)
+	vbox1.pack_start(SyncButton, False, False, 0)
+	hbox.pack_start(vbox1)
+
+	Force = gtk.CheckButton( _("Force sync"))
+	vbox1.pack_start(Force, False, False, 0)
+
+	Quiet = gtk.CheckButton( _("Be quiet!"))
+	vbox1.pack_start(Quiet, False, False, 0)
+
+	Local = gtk.CheckButton("Sync local only")
+	vbox1.pack_start(Local, False, False, 0)
+
+	Jobs = gtk.CheckButton("Custom number of parallel jobs: %s" % Cores )
+	vbox1.pack_start(Jobs, False, False, 0)
 
 	SkipButton = gtk.Button( _("Build (Only when synced)"))
 	SkipButton.connect("clicked", StartBuild)
-	hbox.pack_start(SkipButton)
+	vbox5.pack_start(SkipButton, False, False, 0)
+	hbox.pack_start(vbox5)
+
+
+	Force2 = gtk.CheckButton( _("Force sync"))
+	vbox5.pack_start(Force2, False, False, 0)
+
+	Quiet2 = gtk.CheckButton( _("Be quiet!"))
+	vbox5.pack_start(Quiet2, False, False, 0)
+
+	Local2 = gtk.CheckButton("Sync local only")
+	vbox5.pack_start(Local2, False, False, 0)
+
+	Jobs2 = gtk.CheckButton("Custom number of parallel jobs: %s" % Cores )
+	vbox5.pack_start(Jobs2, False, False, 0)
 
 	vbox.pack_start(hbox, False, False, 10)
 
-	Force = gtk.CheckButton( _("Force sync"))
-	vbox.pack_start(Force, False, False, 0)
 
-	Quiet = gtk.CheckButton( _("Be quiet!"))
-	vbox.pack_start(Quiet, False, False, 0)
-
-	Local = gtk.CheckButton("Sync local only")
-	vbox.pack_start(Local, False, False, 0)
-
-	Jobs = gtk.CheckButton("Custom number of parallel jobs: %s" % Cores )
-	vbox.pack_start(Jobs, False, False, 0)
-
-	BuildLabel = NewPage("Build from Source")
+	BuildLabel = NewPage("Build from Source", vbox)
 	BuildLabel.show_all()
 
-	notebook.insert_page(vbox, BuildLabel, 4)
+	notebook.insert_page(vbox, BuildLabel)
 	window.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 	SourceMenu = gtk.MenuItem("Development")
 	menu.append(SourceMenu)
@@ -1426,11 +1461,11 @@ def DeCompile():
 
 
 
-	DeComLabel = NewPage("(De)Compile")
+	DeComLabel = NewPage("(De)Compile", vbox)
 	DeComLabel.show_all()
-	notebook.insert_page(vbox, DeComLabel, 4)
+	notebook.insert_page(vbox, DeComLabel)
 	DeCompileWindow.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def ExPackage():
 	def Start(cmd):
@@ -1479,11 +1514,11 @@ def ExPackage():
 	StartButton.connect("clicked", Start)
 	vbox.pack_start(StartButton, False, False, 10)
 	
-	ExPackLabel = NewPage("ExPackage")
+	ExPackLabel = NewPage("ExPackage", vbox)
 	ExPackLabel.show_all()
-	notebook.insert_page(vbox, ExPackLabel, 4)
+	notebook.insert_page(vbox, ExPackLabel)
 	ExPackWindow.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def Sign():
 	def StartSign(cmd):
@@ -1541,11 +1576,11 @@ def Sign():
 	StartBtn.connect("clicked", StartSign)
 	vbox.pack_start(StartBtn, False, False, 5)
 
-	SignLabel = NewPage("Sign")
+	SignLabel = NewPage("Sign", vbox)
 	SignLabel.show_all()
-	notebook.insert_page(vbox, SignLabel, 4)
+	notebook.insert_page(vbox, SignLabel)
 	window.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def Zipalign():
 	def StartZip(cmd):
@@ -1575,12 +1610,12 @@ def Zipalign():
 	vbox.pack_start(StartBtn, False, False, 5)
 	
 	
-	ZipLabel = NewPage("Zipalign")
+	ZipLabel = NewPage("Zipalign", vbox)
 	ZipLabel.show_all()
 	
-	notebook.insert_page(vbox, ZipLabel, 4)
+	notebook.insert_page(vbox, ZipLabel)
 	window.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def Install():
 	def StartInst(cmd):
@@ -1616,31 +1651,54 @@ def Install():
 	vbox.pack_start(StartBtn, False, False, 5)
 	
 	
-	InstLabel = NewPage("Install")
+	InstLabel = NewPage("Install", vbox)
 	InstLabel.show_all()
 	
-	notebook.insert_page(vbox, InstLabel, 4)
+	notebook.insert_page(vbox, InstLabel)
 	window.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def BakSmali():
 	def StartBaksmali(cmd):
+		if Std.get_active():
+			NewDialog("ERROR!", "No smali folder selected!")
+		else:
+			if not CstApi.get_text() == '':
+				Api = "-a %s" % CstApi.get_text()
+			else:
+				Api = ''
 		for dexfile in dex:
 			dexfilebase = os.path.basename(dexfile)
 			dexname = dexfilebase.replace('.dex', '')
 			dexname = dexname.replace('.odex', '')
-			outdir = os.path.join(ScriptDir, "Advance", "OUT", dexname)
-			print _("Baksmaling %s to %s" %(dexfile, outdir))
-			os.system("java -jar %s %s -o %s" %(BaksmaliJar, dexfile, outdir))
+			outdir = os.path.join(ScriptDir, "Advance", "Smali", "Smali", dexname)
+			print _("Baksmaling %s to %s with %s" %(dexfile, outdir, Api))
+			os.system("java -jar %s %s -o %s %s" %(BaksmaliJar, dexfile, outdir, Api))
+	def StartSmali(cmd):
+		if Std.get_active():
+			NewDialog("ERROR!", "No smali folder selected!")
+		else:
+			if not CstApi.get_text() == '':
+				Api = "-a %s" % CstApi.get_text()
+			else:
+				Api = ''
+			smali = [r for r in Std.get_group() if r.get_active()][0].get_label()
+			OutputText = Output.get_text()
+			if not OutputText.endswith(".dex"):
+				OutputText = Output + ".dex"
+			Out = os.path.join(ScriptDir, "Advance", "Smali", "OUT", OutputText)
+			if Debug==True: print("java -jar %s %s -o %s" %(SmaliJar, os.path.join(ScriptDir, "Advance", "Smali", "Smali", smali), Out))
+			print _("Smaling %s into %s with %s" %(os.path.join(ScriptDir, "Advance", "Smali", "Smali", smali), Out, Api))
+			os.system("java -jar %s %s -o %s %s" %(SmaliJar, os.path.join(ScriptDir, "Advance", "Smali", "Smali", smali), Out, Api))
+				
 	notebook = MainApp.notebook
 	vbox = gtk.VBox()
 	label = gtk.Label( _("Choose a DEX file from %s to BakSmali:" % os.path.join(ScriptDir, "Advance", "IN")))
 	vbox.pack_start(label, False, False, 0)
 	dex = []
 
-
-	for Dex in find_files(os.path.join(ScriptDir, "Advance", "IN"), "*dex"):
-		Name = Dex.replace(os.path.join(ScriptDir, "Advance", "IN", ''), '')
+	for Dex in find_files(os.path.join(ScriptDir, "Advance", "Smali", "IN"), "*dex"):
+		Name = Dex.replace(os.path.join(ScriptDir, "Advance", "Smali", "IN", ''), '')
 		NameBtn = gtk.CheckButton(Name)
 		NameBtn.connect("clicked", AddToList, dex, Dex, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
@@ -1649,12 +1707,109 @@ def BakSmali():
 	BakSmaliBtn.connect("clicked", StartBaksmali)
 	vbox.pack_start(BakSmaliBtn, False, False, 3)
 
-	SmaliLabel = NewPage("BakSmali")
+	label = gtk.Label( _("Choose a Smali folder to BakSmali:"))
+	vbox.pack_start(label, False, False, 0)
+
+	Std = gtk.RadioButton(None, "Std")
+
+	for Folder in os.listdir(os.path.join(ScriptDir, "Advance", "Smali", "Smali")):
+		NameBtn = gtk.RadioButton(Std, Folder)
+		vbox.pack_start(NameBtn, False, False, 0)
+
+	Output = gtk.Entry()
+	Output.set_text(".dex")
+	vbox.pack_start(Output, False, False, 0)
+
+	SmaliBtn = gtk.Button("Smali")
+	SmaliBtn.connect("clicked", StartSmali)
+	vbox.pack_start(SmaliBtn, False, False, 3)
+
+	space = gtk.Label("")
+	vbox.pack_start(space, False, False, 10)
+
+	CstApiLabel = gtk.Label( _("Choose a custom API Level:") )
+	vbox.pack_start(CstApiLabel, False, False, 0)
+	
+	CstApi = gtk.Entry()
+	vbox.pack_start(CstApi, False, False, 0)
+
+	SmaliLabel = NewPage("BakSmali", vbox)
 	SmaliLabel.show_all()
-	notebook.insert_page(vbox, SmaliLabel, 4)
+	notebook.insert_page(vbox, SmaliLabel)
 	vbox.show_all()
 	window.show_all()
-	notebook.set_current_page(4)
+	notebook.set_current_page(notebook.get_n_pages() - 1)
+
+def Deodex():
+	def DoDeodex(cmd, deo, bootclass=''):
+		buildprop = open(os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "build.prop"), "r")
+		for line in buildprop.readlines():
+			if line.startswith("ro.build.version.release=2.3.7"):
+				global api
+				version = line.replace('ro.build.version.release=', '')
+				if version.startswith('2.3'):
+					api = ' -a 12'
+				elif version.startswith('4'):
+					api = ' -a 14'
+		for apk in deo:
+			odex = os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", apk.replace('apk', 'odex'))
+			WorkDir = os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT")
+			print _("Deodexing %s" % odex)
+			if Debug == True: 
+				print("java -Xmx512m -jar %s%s%s -x %s -o %s" %(BaksmaliJar, bootclass, api, odex, os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT") ) )
+			os.system("java -Xmx512m -jar %s%s%s -x %s -o %s" %(BaksmaliJar, bootclass, api, odex, os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT") ) )
+			os.system("java -Xmx512m -jar %s %s %s -o %s" %(SmaliJar, api, os.path.join(WorkDir, "*"), os.path.join(WorkDir, "classes.dex")))
+			shutil.rmtree(os.path.join(WorkDir, os.listdir(WorkDir)[1]))
+			raw_input('')
+			shutil.rmtree(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"), True)
+			os.mkdir(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"))
+			
+	def DeodexStart(cmd):
+		if not os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "IN")) == '':
+			sw = gtk.ScrolledWindow()
+			vbox = gtk.VBox()
+			sw.add_with_viewport(vbox)
+			deo = []
+			UpdateZip = os.path.join(ScriptDir, "Advance", "ODEX", "IN", os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "IN"))[0])
+			zipfile.ZipFile(UpdateZip).extractall(path=os.path.join(ScriptDir, "Advance", "ODEX", "WORKING"))
+			if os.path.exists(os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "framework")):
+				bootclass = " -d %s" % os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "framework")
+			for filea in os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app")):
+				if filea.endswith('.apk') and os.path.exists(os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", filea.replace('apk', 'odex'))):
+					NameBtn = gtk.CheckButton(filea)
+					NameBtn.set_active(1)
+					deo.append(filea)
+					NameBtn.connect("toggled", AddToList, deo, filea, NameBtn)
+					vbox.pack_start(NameBtn, False, False, 0)
+			StartButton = gtk.Button("Start deodex!")
+			StartButton.connect("clicked", DoDeodex, deo, bootclass)
+			vbox.pack_start(StartButton, False, False, 0)
+			DeodexLabel = NewPage( _("Start deodex") , sw)
+			DeodexLabel.show_all()
+			notebook.insert_page(sw, DeodexLabel)
+			window.show_all()
+			notebook.set_current_page(notebook.get_n_pages() - 1)
+		else:
+			NewDialog("ERROR", "No file inside %s!" % os.path.join(ScriptDir, "Advance", "ODEX", "IN") )
+	notebook = MainApp.notebook
+	vbox = gtk.VBox(False, 0)
+
+	InfoLabel = gtk.Label( _("Paste your ROMs update inside %s" % os.path.join(ScriptDir, "Advance", "ODEX", "IN") ) )
+	vbox.pack_start(InfoLabel, False, False, 3)
+
+	ApiBox = gtk.Entry()
+	ApiBox.set_text("Choose a custom API level (default = 14)")
+	vbox.pack_start(ApiBox, False, False, 3)
+
+	DoneBtn = gtk.Button( _("Done") )
+	DoneBtn.connect("clicked", DeodexStart)
+	vbox.pack_start(DoneBtn, False, False, 3)
+	
+	DeodexLabel = NewPage("De-ODEX", vbox)
+	DeodexLabel.show_all()
+	notebook.insert_page(vbox, DeodexLabel)
+	window.show_all()
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 	
 
 def Changelog():
