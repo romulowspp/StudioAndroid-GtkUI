@@ -1752,6 +1752,9 @@ def Deodex():
 				elif version.startswith('4'):
 					api = ' -a 14'
 		for apk in deo:
+			shutil.rmtree(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"), True)
+			os.mkdir(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"))
+			apk = os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", apk)
 			odex = os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", apk.replace('apk', 'odex'))
 			WorkDir = os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT")
 			print _("Deodexing %s" % odex)
@@ -1759,10 +1762,13 @@ def Deodex():
 				print("java -Xmx512m -jar %s%s%s -x %s -o %s" %(BaksmaliJar, bootclass, api, odex, os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT") ) )
 			os.system("java -Xmx512m -jar %s%s%s -x %s -o %s" %(BaksmaliJar, bootclass, api, odex, os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT") ) )
 			os.system("java -Xmx512m -jar %s %s %s -o %s" %(SmaliJar, api, os.path.join(WorkDir, "*"), os.path.join(WorkDir, "classes.dex")))
-			shutil.rmtree(os.path.join(WorkDir, os.listdir(WorkDir)[1]))
-			raw_input('')
-			shutil.rmtree(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"), True)
-			os.mkdir(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"))
+			os.system("%s x -y -o%s %s" %(sz, WorkDir, apk))
+			os.remove(odex)
+			os.remove(apk)
+			os.system("%s a -y -tzip %s %s -mx9" %(sz, apk, os.path.join(WorkDir, "*")))
+
+		print _("\n\nDeodexing done!\n\n")
+		NewDialog("Deodex", "Done!")
 			
 	def DeodexStart(cmd):
 		if not os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "IN")) == '':
