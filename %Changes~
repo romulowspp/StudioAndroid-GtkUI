@@ -67,11 +67,3 @@ Translated more strings for KeitG (Translator)
 Translate commands almost done
 Some small changes and bugfixes
 }}}
-
-%8
-{{{
-Added Smali
-De-ODEXing supported
-FINALLY FIXED PAGE CLOSING!
-Build.sh is now more usable.
-}}}
