@@ -86,6 +86,7 @@ class Logger(object):
     def write(self, message):
         self.terminal.write(message)
         self.log.write(message)  
+	self.log.flush()
 
 sys.stdout = Logger()
 
@@ -1969,7 +1970,7 @@ def Log():
 def Bug(cmd=''):
 	clipboard = gtk.clipboard_get()
 	text = open(os.path.join(ScriptDir, "log"), "r").read()
-	clipboard.set_text(text)
+	clipboard.set_text("[QUOTE]%s[/QUOTE]" % text)
 	clipboard.store()
 	test = NewDialog("BUGREPORT", _("The log content has been copied to the clipboard"
 				"Please paste it in the website that will be opened now!"))
