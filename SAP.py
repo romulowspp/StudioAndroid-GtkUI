@@ -483,7 +483,7 @@ def Clean():
 	for tree in ['APK', 'Resize', 'Resized', 'Resizing', 'Advance', 'Utils', 'Theme']:
 		shutil.rmtree(tree, True)
 	os.remove("log")
-	for x in ['SAP.pyc', 'debug']:
+	for x in ['SAP.pyc', 'debug', os.path.join('Source', 'repocmd'), os.path.join('Source', 'syncswitches')]:
 		try:
 			os.remove(os.path.join(ScriptDir, x))
 		except OSError:
