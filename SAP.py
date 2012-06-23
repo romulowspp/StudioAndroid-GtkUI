@@ -121,6 +121,7 @@ def DebugOn(cmd):
 	f.close()
 	Restart("cmd")
 
+
 sz = os.path.join(ScriptDir, "7za")
 ApkJar = os.path.join(ScriptDir, "Utils", "apktool.jar")
 SignJar = os.path.join(ScriptDir, "Utils", "signapk.jar")
@@ -161,12 +162,16 @@ def callback(widget, option):
 		Install()
 	elif option == 'BakSmali':
 		BakSmali()
-	elif option == 'Odex':
-		Odex()
+	#elif option == 'Odex':
+	#	Odex()
 	elif option == 'Deodex':
 		Deodex()
+	elif option == 'BP':
+		BinaryPort()
 	elif option == 'Log':
 		Log()
+	elif option == 'Bug':
+		Bug()
 	elif option == 'change':
 		Changelog()
 	elif option == 'help':
@@ -196,6 +201,7 @@ def KillPage(cmd, child):
 		page = notebook.get_n_pages() - 1
 	notebook.remove_page(4)
 	child.destroy()
+	notebook.set_current_page(0)
 
 def AddToList(cmd, List, name, NameBtn, Single=False):
 	if Single==False:
@@ -230,7 +236,7 @@ def NewPage(Label, parent):
 	box.pack_end(closebtn, False, False)
 	return box
 
-for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance/Smali/IN", "/Advance/Smali/Smali", "/Advance/Smali/OUT", "/Advance/ODEX/IN", "/Advance/ODEX/CURRENT", "/Advance/ODEX/WORKING", "/Advance/ODEX/OUT"]:
+for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance/Smali/IN", "/Advance/Smali/Smali", "/Advance/Smali/OUT", "/Advance/ODEX/IN", "/Advance/ODEX/CURRENT", "/Advance/ODEX/WORKING", "/Advance/ODEX/OUT", "/Advance/PORT/TO", "/Advance/PORT/ROM", "/Advance/PORT/WORKING"]:
 	try:
 		os.makedirs(ScriptDir + DIR)
 	except os.error:
@@ -311,6 +317,10 @@ class MainApp():
 	DebugOption = gtk.MenuItem( _("Debug") )
 	DebugOption.connect("activate", DebugOn)
 	Options.append(DebugOption)
+
+	ReportBug = gtk.MenuItem( _("Report a bug") )
+	ReportBug.connect("activate", callback, "Bug")
+	Options.append(ReportBug)
 
 	menu.show_all()
 	
@@ -395,6 +405,10 @@ class MainApp():
 	MainOpt12.connect("clicked", callback, "JDK")
 	DevelopVBox.pack_start(MainOpt12, False, False, 10)
 
+	BinaryPortOpt = gtk.Button("Binary port a ROM")
+	BinaryPortOpt.connect("clicked", callback, "BP")
+	DevelopVBox.pack_start(BinaryPortOpt, False, False, 10)
+
 	notebook.insert_page(DevelopVBox, DevelopLabel, 2)
 
 	# APK TABLE
@@ -478,55 +492,58 @@ def Clean():
 
 
 def Utils():
-	def SetAll(cmd):
-		button1.set_active(True)
-		button2.set_active(True)
-		button3.set_active(True)
-		button4.set_active(True)
-		button5.set_active(True)
-		button6.set_active(True)
-		button7.set_active(True)
-		button8.set_active(True)
-		button10.set_active(True)
+	def SetAll(cmd, AllBtn):
+		if AllBtn.get_active():
+			button1.set_active(True)
+			button2.set_active(True)
+			button3.set_active(True)
+			button4.set_active(True)
+			button5.set_active(True)
+			button6.set_active(True)
+			button7.set_active(True)
+			button8.set_active(True)
+			button10.set_active(True)
 	
 	def Install(cmd):
-		def Copy(Subdir):
+		def Copy(Subdir="bin"):
 			if button1.get_active():
-				shutil.copy(ScriptDir + "/Utils/adb", Home + "%s/" % Subdir)
+				shutil.copy(os.path.join(ScriptDir, "Utils", "adb"), os.path.join(Home, Subdir))
 			if button2.get_active():
-				shutil.copy(ScriptDir + "/Utils/aapt", Home + "%s" % Subdir)
+				shutil.copy(os.path.join(ScriptDir, "Utils", "aapt"), os.path.join(Home, Subdir))
 			if button3.get_active():
-				shutil.copy(ScriptDir + "/Utils/7za", Home + "%s" % Subdir)
-			if button4.get_active(): 
-				os.system("mkdir -p " + Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/Script.sh", Home + "%s" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/apktool.jar", Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/apktool", Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/7za", Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/aapt", Home + "%s/other" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/optipng", Home + "%s/other" % Subdir)
+				shutil.copy(os.path.join(ScriptDir, "Utils", "7za"), os.path.join(Home, Subdir))
+			if button4.get_active():
+				if not os.path.exists(os.path.join(Home, "bin")):
+					os.mkdir(os.path.join(Home, "bin"))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "Script.sh"), os.path.join(Home, Subdir))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "apktool.jar"), os.path.join(Home, Subdir))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "apktool"), os.path.join(Home, Subdir, "other"))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "signapk.jar"), os.path.join(Home, Subdir, "other"))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "testkey.pk8"), os.path.join(Home, Subdir, "other"))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "testkey.x509.pem"), os.path.join(Home, Subdir, "other"))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "7za"), os.path.join(Home, Subdir, "other"))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "aapt"), os.path.join(Home, Subdir, "other"))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "optipng"), os.path.join(Home, Subdir, "other"))
 			if button5.get_active():
-				shutil.copy(ScriptDir + "/Utils/optipng", Home + "%s" % Subdir)
+				shutil.copy(os.path.join(ScriptDir, "Utils", "optipng"), os.path.join(Home, Subdir))
 			if button6.get_active():
-				shutil.copy(ScriptDir + "/Utils/signapk.jar", Home + "%s/" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/testkey.pk8", Home + "%s/" % Subdir)
-				shutil.copy(ScriptDir + "/Utils/testkey.x509.pem", Home + "%s/" % Subdir)
+				shutil.copy(os.path.join(ScriptDir, "Utils", "signapk.jar"), os.path.join(Home, Subdir))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "testkey.pk8"), os.path.join(Home, Subdir))
+				shutil.copy(os.path.join(ScriptDir, "Utils", "testkey.x509.pem"), os.path.join(Home, Subdir))
 			if button7.get_active():
-				shutil.copy(ScriptDir + "/Utils/smali-1.3.2.jar", Home + "%s" % Subdir)
+				shutil.copy(os.path.join(ScriptDir, "Utils", "smali-1.3.2.jar"), os.path.join(Home, Subdir))
 			if button8.get_active():
-				shutil.copy(ScriptDir + "/Utils/baksmali-1.3.2.jar", Home + "%s" % Subdir)	
+				shutil.copy(os.path.join(ScriptDir, "Utils", "baksmali-1.3.2.jar"), os.path.join(Home, Subdir))
+			NewDialog("Utilities", "Installed!")
 		if OS == 'Lin':
-			os.makedirs(Home + "/bin")
-			Copy("/bin")
+			if not os.path.exists(os.path.join(Home, "bin")):
+				os.mkdir(os.path.join(Home, "bin"))
+			Copy()
 			if button10.get_active():
 				os.system("sudo apt-get install imagemagick")
 		if OS == 'Win':
 			os.makedirs(Home + "/Utils/")
-			Copy("/Utils")
-			print _("Sorry, windows does not support $PATH modifications from cmd...\nInstead, I will open up a site for you")
+			print _("Sorry, windows does not support PATH modifications from cmd...\nInstead, I will open up a site for you")
 			print _("That site contains a HOWTO on adding a directory to the PATH.")
 			print _("Add this directory: " + Home + "\Utils")
 			if button10.get_active():
@@ -538,7 +555,7 @@ def Utils():
 			if not q == 'n':
 				Web.open("http://www.computerhope.com/issues/ch000549.htm")
 			if q == '2':
-				Web.open("http://www.imagemagick.org/download/binaries/ImageMagick-6.7.7-5-Q16-windows-dll.exe")
+				Web.open("http://www.imagemagick.org/download/binaries/ImageMagick-6.7.7-8-Q16-windows-dll.exe")
 		KillPage("cmd", vbox)
 
 	notebook = MainApp.notebook
@@ -579,7 +596,7 @@ def Utils():
 	UtilsTable.attach(button8, 0, 1, 7, 8)
 
 	button9 = gtk.CheckButton( _("ALL!") )
-	button9.connect("toggled", SetAll)
+	button9.connect("toggled", SetAll, button9)
 	UtilsTable.attach(button9, 0, 1, 9, 10)
 
 	button10 = gtk.CheckButton("ImageMagick")
@@ -753,23 +770,16 @@ def Resize():
 		if ApkResize.get_active() or EasyResize.get_active():
 			Perc = str(round(OutRes * 100 / InRes, 2)) + "%"
 
-		if OS == 'Win' and not DstDir.endswith('\\'):
-			DstDir = DstDir + '\\'
-		elif not OS == 'Win' and not DstDir.endswith('/'):
-			DstDir = DstDir + "/"
+		DstDir = os.path.join(DstDir, '')
 
-		print _("Resize percentage is " + str(Perc))
+		print _("Resize percentage is %s" % str(Perc))
 		if os.path.exists(DstDir):
 			shutil.rmtree(DstDir)
 		os.makedirs(DstDir)
-		if OS == "Win" and not InDir.endswith('\\'):
-			SrcDir = InDir + "\\"
-		elif not OS == 'Win' and not InDir.endswith('\\'):
-			SrcDir = InDir + "/"
-		else:
-			SrcDir = InDir
 
-		print("SrcDir = " + SrcDir + "\nDstDir = " + DstDir)
+		SrcDir = os.path.join(InDir, '')
+
+		print("SrcDir = %s\nDstDir = %s" %(SrcDir, DstDir))
 
 		for Image in find_files(SrcDir, "*.png"):
 			DstFile = Image.replace(SrcDir, DstDir)
@@ -778,7 +788,7 @@ def Resize():
 			Sub = Sub.replace(Name, '')
 			if not os.path.exists(DstDir + Sub):
 				os.makedirs(DstDir + Sub)
-			print(Image + " -> " + DstFile + "\n")
+			print("%s -> %s" %(Image, DstFile))
 			if Debug == True: print("convert %s -resize %s %s" % (Image, Perc, DstFile))
 			os.system("convert %s -resize %s %s" % (Image, Perc, DstFile))
 		message = "You can find the resized images in Resized"
@@ -811,7 +821,7 @@ def Resize():
 	ResizePercentageLabel = gtk.Label( _("Enter the resize percentage 0-100 %") )
 
 	ResizeDirBox = gtk.Entry()
-	ResizeDirBox.set_text(ScriptDir + "/")
+	ResizeDirBox.set_text(os.path.join(ScriptDir, ''))
 	ResizeDirBox.set_size_request(0, 30)
 
 	ResizeDirLabel = gtk.Label("Enter the directory containing the images you want to resize")
@@ -866,7 +876,7 @@ def Resize():
 	APKResizeTable.attach(ApkOutDPILabel, 1, 2, 1, 2)
 
 	ApkResizeDirBox = gtk.Entry()
-	ApkResizeDirBox.set_text(ScriptDir + "/")
+	ApkResizeDirBox.set_text(os.path.join(ScriptDir, ''))
 	ApkResizeDirBox.set_size_request(0, 30)
 	APKResizeTable.attach(ApkResizeDirBox, 0, 1, 2, 3, xpadding=20)
 	ResizeDirLabel = gtk.Label("Enter the directory containing the APK")
@@ -912,7 +922,7 @@ def Theme():
 		Red = str(RedBox.get_text())
 		Green = str(GreenBox.get_text())
 		Blue = str(BlueBox.get_text())
-		SrcDir = ScriptDir + "/Theme"
+		SrcDir = os.path.join(ScriptDir, "Theme")
 		os.system("mkdir -p " + SrcDir)
 		for Image in find_files(SrcDir, "*.png"):
 			Image1 = str(Image)
@@ -1177,22 +1187,23 @@ g++-multilib mingw32 openjdk-6-jdk tofrodos libxml2-utils xsltproc zlib1g-dev:i3
 def SDK():
 	print("\n\n Downloading SDK installer!\n\n")
 	if OS == 'Lin':
-		urllib.urlretrieve('http://dl.google.com/android/android-sdk_r16-linux.tgz', 'SDK.tgz')
-		os.system(os.path.join(ScriptDir + "7za") + " x -y SDK.tgz -o" + Home)
-		os.system(ScriptDir + "/7za x -y " + Home + "/SDK.tar -o" + Home)
+		#urllib.urlretrieve('http://dl.google.com/android/android-sdk_r16-linux.tgz', 'SDK.tgz')
+		os.system("%s x -y SDK.tgz -o%s" %(sz, Home))
+		os.system("%s x -y %s/SDK.tar -o%s" %(sz, Home, Home))
 		os.system("chmod 777 " + Home + "/android-sdk-linux/* -R")
-		os.system("cd " + Home + "/android-sdk-linux/tools")
-	elif OS == 'Mac':
+		os.chdir(os.path.join(Home, "android-sdk-linux", "tools") )
+	elif OS == 'Win':
 		urllib.urlretrieve('http://dl.google.com/android/android-sdk_r18-macosx.zip', os.path.join(Home + 'SDK.zip'))
 		zipfile.ZipFile(os.path.join(Home + "SDK.zip")).extractall()
-	elif OS == 'Win':
+	elif OS == 'Mac':
 		urllib.urlretrieve('http://dl.google.com/android/installer_r18-windows.exe', os.path.join(Home, 'SDK.exe'))
 		os.system("start " + Home + '/SDK.exe')
 		os.system("chmod 777 " + Home + "/android-sdk-macosx/* -R")
 		os.system("cd " + Home + "/android-sdk-macosx/tools")
 	if OS == 'Lin' or OS == 'Mac':
 		print("\n\n\n A popup will show. This is the SDK installer, configure it!\n\n\n")
-		os.system("./android &")
+		os.system("pwd")
+		os.system("android &")
 
 
 
@@ -1483,6 +1494,7 @@ def ExPackage():
 				Ex = repname[num]
 				DirPath = os.path.join(ScriptDir, "APK", "EX", Ex , "*")
 				DstFile = os.path.join(ScriptDir, "APK", "OUT", "Unsigned-" + Ex + ".apk")
+				if Debug == True: print("%s a -y -tzip %s %s -mx9" %(sz, DstFile, DirPath))
 				os.system("%s a -y -tzip %s %s -mx9" %(sz, DstFile, DirPath))
 	notebook = MainApp.notebook
 	ExPackWindow = window
@@ -1536,6 +1548,7 @@ def Sign():
 			APKName = os.path.basename(APKName)
 			APK = os.path.join(ScriptDir, "APK", APK)
 			APKName = os.path.join(ScriptDir, "APK", "OUT", "Signed-" + APKName)
+			if Debug == True: print("java -jar %s -w %s %s %s %s" %(SignJar, key1, key2, APK, APKName))
 			os.system("java -jar %s -w %s %s %s %s" %(SignJar, key1, key2, APK, APKName))
 		
 		
@@ -1560,14 +1573,14 @@ def Sign():
 
 	sign = []
 
-	for apk in find_files(ScriptDir + "/APK/OUT/", "*.apk"):
-		name = "/OUT/" + os.path.basename(apk)
+	for apk in find_files(os.path.join(ScriptDir, "APK", "OUT"), "*.apk"):
+		name = os.path.join("OUT", os.path.basename(apk))
 		NameBtn = gtk.CheckButton(name)
 		NameBtn.connect("clicked", AddToList, sign, name, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
 	
-	for apk in find_files(ScriptDir + "/APK/IN/", "*.apk"):
-		name = "/IN/" + os.path.basename(apk)
+	for apk in find_files(os.path.join(ScriptDir, "APK", "IN"), "*.apk"):
+		name = os.path.join("IN", os.path.basename(apk))
 		NameBtn = gtk.CheckButton(name)
 		NameBtn.connect("clicked", AddToList, sign, name, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
@@ -1587,9 +1600,10 @@ def Zipalign():
 		Numbers = len(zipapk)
 		for num in range(0, Numbers):
 			APK = zipapk[num]
-			FullAPK = ScriptDir + "/APK/" + APK
+			FullAPK = os.path.join(ScriptDir, "APK", APK)
 			Name = os.path.basename(FullAPK)
-			OutFile = ScriptDir + "/APK/OUT/Aligned-" + APK
+			OutFile = os.path.join(ScriptDir, "APK", "OUT", "Aligned-" + Name)
+			if Debug == True: print(ZipalignFile + " -fv 4 %s %s" %(FullAPK, OutFile))
 			os.system(ZipalignFile + " -fv 4 %s %s" %(FullAPK, OutFile))
 	notebook = MainApp.notebook
 	vbox = gtk.VBox()
@@ -1599,8 +1613,8 @@ def Zipalign():
 	
 	zipapk = []
 
-	for APK in find_files(ScriptDir + "/APK", "*.apk"):
-		Name = APK.replace(ScriptDir + "/APK/", '')
+	for APK in find_files(os.path.join(ScriptDir, "APK"), "*.apk"):
+		Name = APK.replace(os.path.join(ScriptDir, "APK", ''), '')
 		NameBtn = gtk.CheckButton(Name)
 		NameBtn.connect("toggled", AddToList, zipapk, Name, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
@@ -1816,6 +1830,102 @@ def Deodex():
 	notebook.insert_page(vbox, DeodexLabel)
 	window.show_all()
 	notebook.set_current_page(notebook.get_n_pages() - 1)
+
+def BinaryPort():
+	def ChooseFile(cmd, Chooser, Btn, kind):
+			response = Chooser.run()
+			if response == gtk.RESPONSE_OK:
+				if kind == 'ToROM':
+					global ToROM
+					ToROM = Chooser.get_filename()
+					Btn.set_label("IN: %s" % ToROM)
+				if kind == 'ROM':
+					global ROM
+					ROM = Chooser.get_filename()
+					Btn.set_label("ROM: %s" % ROM)
+			Chooser.destroy()
+
+
+
+
+
+	def Start(cmd):
+		zipfile.ZipFile(ToROM).extractall(path=InDirTo)
+		buildprop = open(os.path.join(InDirTo, "system", "build.prop"))
+		for line in buildprop.readlines():
+			if line.startswith("ro.build.version.release="):
+				Version = line.replace("ro.build.version.release=", '')
+				Ver = list(Version)
+				StockVer = Ver[0] + Ver[1] + Ver[2]
+		zipfile.ZipFile(ROM).extractall(path=InDirFrom)
+
+		buildprop = open(os.path.join(InDirFrom, "system", "build.prop"))
+		for line in buildprop.readlines():
+			if line.startswith("ro.build.version.release="):
+				Version = line.replace("ro.build.version.release=", '')
+				Ver = list(Version)
+				ROMVer = Ver[0] + Ver[1] + Ver[2]
+		if not StockVer == ROMVer:
+			NewDialog( _("Info"), _("Choose a ROM you want to port to your device with version %s.\n\n Version of your BASE: %s\nVersion of the ROM you want to port: %s" %(StockVer, StockVer, ROMVer)) )
+		else:
+			def Copy(From, To):
+				if os.path.exists(To):
+					print _("Removing %s" % To)
+					if os.path.isdir(To):
+						shutil.rmtree(To, True)
+					else:
+						os.remove(To)
+				if os.path.exists(From):
+					print _("Copying %s to %s" %(From, To))
+					if os.path.isdir(From):
+						shutil.copytree(From, To)
+					else:
+						shutil.copy(From, To)
+			Copy(InDirTo, WorkDir)
+			if os.path.exists(BackDir):
+				shutil.rmtree(BackDir)
+			os.mkdir(BackDir)
+			for apk in ['Stk.apk', 'VpnServices.apk', 'Camera.apk', 'Bluetooth.apk']:
+				apk = os.path.join(InDirFrom, "system", "app", apk)
+				if os.path.exists(apk):
+					shutil.copy(apk, BackDir)
+					odex = apk.replace('apk', 'odex')
+					if os.path.exists(odex):
+						shutil.copy(odex, BackDir)
+						
+			Copy(os.path.join(InDirFrom, "system", "app"), os.path.join(WorkDir, "system", "app"))
+			Copy(os.path.join(InDirFrom, "system", "framework"), os.path.join(WorkDir, "system", "framework"))
+			Copy(os.path.join(InDirFrom, "system", "media"), os.path.join(WorkDir, "system", "media"))
+			Copy(os.path.join(InDirFrom, "system", "fonts"), os.path.join(WorkDir, "system", "fonts"))
+			Copy(os.path.join(InDirFrom, "data"), os.path.join(WorkDir, "data"))
+			Copy(os.path.join(InDirFrom, "system", "lib", "libandroid_runtime.so"), os.path.join(WorkDir, "system", "lib", "libandroid_runtime.so"))
+			for x in os.listdir(BackDir):
+				Copy(os.path.join(BackDir, x), os.path.join(WorkDir, "system", "app", x))
+	notebook = MainApp.notebook
+	vbox = gtk.VBox(False, 0)
+	InDirTo = os.path.join(ScriptDir, "Advance", "PORT", "TO")
+	InDirFrom = os.path.join(ScriptDir, "Advance", "PORT", "ROM")
+	WorkDir = os.path.join(ScriptDir, "Advance", "PORT", "WORKING")
+	BackDir = os.path.join(ScriptDir, "Advance", "PORT", "Backup")
+	ToFileDial = gtk.FileChooserDialog(title=None,action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                                  	buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+	ToExtractBtn = gtk.Button( _("Choose ROM you want to port to:"))
+	ToExtractBtn.connect("clicked", ChooseFile, ToFileDial, ToExtractBtn, "ToROM")
+	RomFileDial = gtk.FileChooserDialog(title=None,action=gtk.FILE_CHOOSER_ACTION_OPEN,
+                                  	buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
+	RomFileBtn = gtk.Button( _("Choose the ROM you want to port") )
+	RomFileBtn.connect("clicked", ChooseFile, RomFileDial, RomFileBtn, 'ROM')
+	vbox.pack_start(ToExtractBtn, False, False, 0)
+	vbox.pack_start(RomFileBtn, False, False, 0)
+
+	StartBtn = gtk.Button( _("Start porting") )
+	StartBtn.connect("clicked", Start)
+	vbox.pack_start(StartBtn, False, False, 30)
+	BinaryLabel = NewPage( _("Binary port"), vbox)
+	BinaryLabel.show_all()
+	notebook.insert_page(vbox, BinaryLabel)
+	window.show_all()
+	notebook.set_current_page(notebook.get_n_pages() - 1)
 	
 
 def Changelog():
@@ -1833,6 +1943,8 @@ def Changelog():
 	ChangeWindow.show_all()
 
 def Log():
+	def DeleteLog(cmd):
+		os.remove(os.path.join(ScriptDir, "log")) 
 	LogWindow = gtk.Window(gtk.WINDOW_TOPLEVEL)
 	LogWindow.set_size_request(700, 600)
 	LogWindow.set_title("StudioAndroid - Log")
@@ -1844,14 +1956,24 @@ def Log():
 	log = open(ScriptDir + "/log", "r")
 	Text = log.read()
 	Label = gtk.Label(Text)
+	Label.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("blue"))
 	Label.set_selectable(True)
 
 	sw.add_with_viewport(Label)
 	DeleteButton = gtk.Button( _("Delete log") )
-	DeleteButton.connect("clicked", os.remove(os.path.join(ScriptDir, "log")) )
+	DeleteButton.connect("clicked", DeleteLog)
 	vbox.pack_start(DeleteButton, False)
 	vbox.show_all()
 	LogWindow.show_all()
+
+def Bug(cmd=''):
+	clipboard = gtk.clipboard_get()
+	text = open(os.path.join(ScriptDir, "log"), "r").read()
+	clipboard.set_text(text)
+	clipboard.store()
+	test = NewDialog("BUGREPORT", _("The log content has been copied to the clipboard"
+				"Please paste it in the website that will be opened now!"))
+	Web.open("http://forum.xda-developers.com/newreply.php?do=newreply&noquote=1&p=22414621")
 
 def Help():
 	Web.open("http://forum.xda-developers.com/showpost.php?p=23546408&postcount=9")
@@ -1867,6 +1989,5 @@ if not os.path.exists(os.path.join(Home, ".SA", "Language")):
 	window.hide()
 	window2.show_all()
 gtk.main()
-
 
 

@@ -75,3 +75,12 @@ De-ODEXing supported
 FINALLY FIXED PAGE CLOSING!
 Build.sh is now more usable.
 }}}
+
+%9
+{{{
+Lots of bugs fixed in APK menu
+More path related bugs fixed
+Added BinaryPort (partially working)
+Compiled for Linux
+Compiled for Windows
+}}}
