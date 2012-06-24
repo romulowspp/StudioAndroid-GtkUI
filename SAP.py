@@ -17,12 +17,13 @@ import zipfile
 import py_compile
 import threading
 import gettext
-from locale import setlocale, LC_ALL
+import locale
 import time
 import multiprocessing
 from Source.SourceP500 import *
 from Source.SourceStock import *
 _ = gettext.gettext
+
 
 ScriptDir=os.path.abspath(os.path.dirname(sys.argv[0]))
 Home=os.path.expanduser('~')
@@ -32,16 +33,20 @@ Cores = str(multiprocessing.cpu_count())
 
 if not os.path.exists(os.path.join(Home, ".SA", "Language")):
 	def PickLanguage(cmd):
-		global LangSet
 		f = open(os.path.join(Home, ".SA", "Language"), "w")
-		f.close()
-		f = open(os.path.join(Home, ".SA", "Language"), "w")
-		global sett
-		if FrBtn.get_active(): f.write("Fr")
-		if EnBtn.get_active(): f.write("En")
-		if ItBtn.get_active(): f.write("En")
+		f.flush()
+		#f = open(os.path.join(Home, ".SA", "Language"), "w")
+		if FrBtn.get_active(): f.write("fr_FR")
+		if EnBtn.get_active(): f.write("en_US")
+		if ItBtn.get_active(): f.write("it_IT")
+		if NlBtn.get_active(): f.write("nl_NL")
+		f.flush()
 		window2.destroy()
-		Restart("cmd")
+		os.execl(sys.executable, sys.executable, * sys.argv)
+	global FirstRun
+	FirstRun = True
+	if not os.path.exists(os.path.join(Home, ".SA")):
+		os.makedirs(Home + "/.SA")
 	window2 = gtk.Window(gtk.WINDOW_TOPLEVEL)
 	window2.set_position(gtk.WIN_POS_MOUSE)
 	window2.set_resizable(False)
@@ -51,19 +56,30 @@ if not os.path.exists(os.path.join(Home, ".SA", "Language")):
 	FrBtn = gtk.RadioButton(None, "Francais")
 	EnBtn = gtk.RadioButton(FrBtn, "English")
 	ItBtn = gtk.RadioButton(FrBtn, "Italiano")
+	NlBtn = gtk.RadioButton(FrBtn, "Nederlands")
 	vbox.pack_start(FrBtn)
 	vbox.pack_start(EnBtn)
 	vbox.pack_start(ItBtn)
+	vbox.pack_start(NlBtn)
 	
-	ChooseBtn = gtk.Button("Choisissez | Choose | Scegli")
+	ChooseBtn = gtk.Button("Choisissez | Choose\nScegli | Kies")
 	vbox.pack_start(ChooseBtn)
 	ChooseBtn.connect("clicked", PickLanguage)
+	window2.show_all()
+	gtk.main()
+	while 1:
+		time.sleep(1)
+else:
+	FirstRun = False
 
-gettext.textdomain("default")
-gettext.bindtextdomain ("default", os.path.join(ScriptDir + "lang"))
+DIR = os.path.join(ScriptDir, "lang", open(os.path.join(Home, ".SA", "Language"), "r").read())
+APP = 'SAP'
+gettext.textdomain(APP)
+gettext.bindtextdomain(APP, DIR)
 gettext.bind_textdomain_codeset("default", 'UTF-8')
-setlocale(LC_ALL, "")
+locale.setlocale(locale.LC_ALL, "")
 LOCALE_DIR = os.path.join(ScriptDir, "lang")
+Language = open(os.path.join(Home, ".SA", "Language"), "r").read()
 
 
 
@@ -180,7 +196,7 @@ def callback(widget, option):
 	elif option == 'upd':
 		Update()
 	else :
-		print("%s is not defined yet, SORRY!" % option)
+		print _("%s is not defined yet, SORRY!" % option)
 
 def NewDialog(Title, Text):
 	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK)
@@ -244,10 +260,10 @@ for DIR in ["/APK/IN", "/APK/OUT", "/APK/EX", "/APK/DEC", "/Resize", "/Advance/S
 		pass
 
 
-if not os.path.exists(os.path.join(Home, ".SA")):
-	os.makedirs(Home + "/.SA")
+if not os.path.exists(os.path.join(Home, ".SA", "ran")):
 	FirstRun = True
 	NewDialog( _("First Run"), _("Hi there! It seems this is your first time to run StudioAndroid!\nPlease note this tool still has a long way to go,\n and I need testers and reporters...\n So please publish your LOG!") )
+	open(os.path.join(Home, ".SA", "ran"), "w").flush()
 else:
 	FirstRun = False
 
@@ -272,6 +288,7 @@ print _("Home = " + Home)
 print _("ScriptDir = " + ScriptDir)
 print _("File = " + sys.argv[0])
 print ("Debug = " + bug)
+print ("Language = " + Language)
 
 
 
@@ -364,7 +381,7 @@ class MainApp():
 	MainOpt4.connect("clicked", callback, "4")
 	UtilVBox.pack_start(MainOpt4, False, False, 10)
 
-	MainOpt5 = gtk.Button("Optimize Images")
+	MainOpt5 = gtk.Button( _("Optimize Images") )
 	MainOpt5.connect("clicked", callback, "5")
 	UtilVBox.pack_start(MainOpt5, False, False, 10)
 
@@ -373,7 +390,7 @@ class MainApp():
 	# DEVELOP TABLE
 
 	DevelopTable = gtk.Table(8, 1, False)
-	DevelopLabel = gtk.Label("Development")
+	DevelopLabel = gtk.Label( _("Development") )
 	DevelopVBox = gtk.VBox()
 
 	image = gtk.Image()
@@ -382,31 +399,31 @@ class MainApp():
 	DevelopVBox.pack_start(image)
 
 	if not OS == 'Win':
-		MainOpt6 = gtk.Button("Prepare Building")
+		MainOpt6 = gtk.Button( _("Prepare Building") )
 		MainOpt6.connect("clicked", callback, "6")
 		DevelopVBox.pack_start(MainOpt6, False, False, 10)
 
-		MainOpt7 = gtk.Button("Build from Source")
+		MainOpt7 = gtk.Button( _("Build from Source") )
 		MainOpt7.connect("clicked", callback, "BuildSource")
 		DevelopVBox.pack_start(MainOpt7, False, False, 10)
 
-	MainOpt8 = gtk.Button("Build Kernel")
+	MainOpt8 = gtk.Button( _("Build Kernel") )
 	MainOpt8.connect("clicked", callback, "8")
 	DevelopVBox.pack_start(MainOpt8, False, False, 10)
 
-	MainOpt9 = gtk.Button("Add Governor")
+	MainOpt9 = gtk.Button( _("Add Governor") )
 	MainOpt9.connect("clicked", callback, "Gov")
 	DevelopVBox.pack_start(MainOpt9, False, False, 10)
 
-	MainOpt11 = gtk.Button("Install Android-SDK")
+	MainOpt11 = gtk.Button( _("Install Android-SDK") )
 	MainOpt11.connect("clicked", callback, "SDK")
 	DevelopVBox.pack_start(MainOpt11, False, False, 10)
 
-	MainOpt12 = gtk.Button("Install Java JDK")
+	MainOpt12 = gtk.Button(_("Install Java JDK"))
 	MainOpt12.connect("clicked", callback, "JDK")
 	DevelopVBox.pack_start(MainOpt12, False, False, 10)
 
-	BinaryPortOpt = gtk.Button("Binary port a ROM")
+	BinaryPortOpt = gtk.Button(_("Binary port a ROM"))
 	BinaryPortOpt.connect("clicked", callback, "BP")
 	DevelopVBox.pack_start(BinaryPortOpt, False, False, 10)
 
@@ -447,26 +464,26 @@ class MainApp():
 	# ADVANCE TABLE
 
 	AdvanceVBox = gtk.VBox()
-	AdvanceLabel = gtk.Label("Advanced")
+	AdvanceLabel = gtk.Label( _("Advanced") )
 
 	image = gtk.Image()
 	image.set_from_file("images/Advanced.png")
 	image.show()
 	AdvanceVBox.pack_start(image)
 
-	MainOpt19 = gtk.Button("(Bak)Smali")
+	MainOpt19 = gtk.Button( _("(Bak)Smali"))
 	MainOpt19.connect("clicked", callback, "BakSmali")
 	AdvanceVBox.pack_start(MainOpt19, False, False, 10)
 
-	MainOpt21 = gtk.Button("ODEX")
+	MainOpt21 = gtk.Button( _("ODEX") )
 	MainOpt21.connect("clicked", callback, "Odex")
 	AdvanceVBox.pack_start(MainOpt21, False, False, 10)
 
-	MainOpt22 = gtk.Button("DE-ODEX")
+	MainOpt22 = gtk.Button(_("DE-ODEX"))
 	MainOpt22.connect("clicked", callback, "Deodex")
 	AdvanceVBox.pack_start(MainOpt22, False, False, 10)
 
-	MainOpt23 = gtk.Button("Aroma Menu")
+	MainOpt23 = gtk.Button(_("Aroma Menu"))
 	MainOpt23.connect("clicked", callback, "Aroma")
 	AdvanceVBox.pack_start(MainOpt23, False, False, 10)
 
@@ -482,7 +499,9 @@ class MainApp():
 
 def Clean():
 	for tree in ['APK', 'Resize', 'Resized', 'Resizing', 'Advance', 'Utils', 'Theme']:
+		tree = os.path.join(ScriptDir, tree)
 		shutil.rmtree(tree, True)
+	shutil.rmtree(os.path.join(Home, ".SA"), True)
 	os.remove("log")
 	for x in ['SAP.pyc', 'debug', os.path.join('Source', 'repocmd'), os.path.join('Source', 'syncswitches')]:
 		try:
@@ -625,7 +644,7 @@ def Utils():
 def CopyFrom():
 	def Start(cmd):
 		Ext = ExtBox.get_text()
-		print("Copying files FROM " + FromDir + " to " + ToDir + " With extension " + Ext)
+		print _("Copying files FROM " + FromDir + " to " + ToDir + " With extension " + Ext)
 		for ToFile in find_files(ToDir, "*" + Ext):
 			filename = ToFile.replace(ToDir, FromDir)
 			if os.path.exists(filename):
@@ -635,7 +654,7 @@ def CopyFrom():
 		KillPage(cmd, vbox)
 
 	CopyFromWindow = window
-	CopyFromLabel = gtk.Label("CopyFrom")
+	CopyFromLabel = gtk.Label( _("CopyFrom"))
 
 	vbox = gtk.VBox()
 	notebook = MainApp.notebook
@@ -792,7 +811,6 @@ def Resize():
 			print("%s -> %s" %(Image, DstFile))
 			if Debug == True: print("convert %s -resize %s %s" % (Image, Perc, DstFile))
 			os.system("convert %s -resize %s %s" % (Image, Perc, DstFile))
-		message = "You can find the resized images in Resized"
 		NewDialog( _("Resized") , _("You can find the resized images in Resized") )
 		KillPage(cmd, vbox)
 		
@@ -825,7 +843,7 @@ def Resize():
 	ResizeDirBox.set_text(os.path.join(ScriptDir, ''))
 	ResizeDirBox.set_size_request(0, 30)
 
-	ResizeDirLabel = gtk.Label("Enter the directory containing the images you want to resize")
+	ResizeDirLabel = gtk.Label( _("Enter the directory containing the images you want to resize"))
 
 	NormalResizeTable.attach(ResizePercentageBox, 0, 1, 0, 1, xpadding=20)
 	NormalResizeTable.attach(ResizePercentageLabel, 1, 2, 0, 1)
@@ -833,7 +851,7 @@ def Resize():
 	NormalResizeTable.attach(ResizeDirLabel, 1, 2, 1, 2)
 	vbox.pack_start(NormalResizeTable, False, False, 0)
 
-	EasyResize = gtk.RadioButton(NormalResize, "Easy resizing using ..DPI values")
+	EasyResize = gtk.RadioButton(NormalResize, _("Easy resizing using ..DPI values"))
 	vbox.pack_start(EasyResize, False, False, 2)
 
 	EasyResizeTable = gtk.Table(2, 2, True)
@@ -841,25 +859,25 @@ def Resize():
 	InDPIBox = gtk.Entry()
 	InDPIBox.set_text("..DPI")
 	EasyResizeTable.attach(InDPIBox, 0, 1, 0, 1, xpadding=20)
-	InDPILabel = gtk.Label("Give the DPI of the images you want to resize")
+	InDPILabel = gtk.Label( _("Give the DPI of the images you want to resize"))
 	EasyResizeTable.attach(InDPILabel, 1, 2, 0, 1)
 
 	OutDPIBox = gtk.Entry()
 	OutDPIBox.set_text("..DPI")
 	EasyResizeTable.attach(OutDPIBox, 0, 1, 1, 2, xpadding=20)
-	OutDPILabel = gtk.Label("Give the DPI of the resolution you want to resize to")
+	OutDPILabel = gtk.Label( _("Give the DPI of the resolution you want to resize to"))
 	EasyResizeTable.attach(OutDPILabel, 1, 2, 1, 2)
 
 	EasyResizeDirBox = gtk.Entry()
 	EasyResizeDirBox.set_text(ScriptDir)
 	EasyResizeDirBox.set_size_request(0, 30)
 	EasyResizeTable.attach(EasyResizeDirBox, 0, 1, 2, 3, xpadding=20)
-	ResizeDirLabel = gtk.Label("Enter the directory containing the images you want to resize")
+	ResizeDirLabel = gtk.Label(_("Enter the directory containing the images you want to resize"))
 	EasyResizeTable.attach(ResizeDirLabel, 1, 2, 2, 3)
 
 	vbox.pack_start(EasyResizeTable, False, False, 0)
 
-	ApkResize = gtk.RadioButton(NormalResize, "Resize an APK using DPI values")
+	ApkResize = gtk.RadioButton(NormalResize, _("Resize an APK using DPI values"))
 	vbox.pack_start(ApkResize, False, False, 10)
 
 	APKResizeTable = gtk.Table(3, 2, True)
@@ -867,7 +885,7 @@ def Resize():
 	ApkInDPIBox = gtk.Entry()
 	ApkInDPIBox.set_text("..DPI")
 	APKResizeTable.attach(ApkInDPIBox, 0, 1, 0, 1, xpadding=20)
-	ApkInDPILabel = gtk.Label("Give the DPI of the images you want to resize")
+	ApkInDPILabel = gtk.Label(_("Give the DPI of the images you want to resize"))
 	APKResizeTable.attach(ApkInDPILabel, 1, 2, 0, 1)
 
 	ApkOutDPIBox = gtk.Entry()
@@ -880,7 +898,7 @@ def Resize():
 	ApkResizeDirBox.set_text(os.path.join(ScriptDir, ''))
 	ApkResizeDirBox.set_size_request(0, 30)
 	APKResizeTable.attach(ApkResizeDirBox, 0, 1, 2, 3, xpadding=20)
-	ResizeDirLabel = gtk.Label("Enter the directory containing the APK")
+	ResizeDirLabel = gtk.Label(_("Enter the directory containing the APK"))
 	APKResizeTable.attach(ResizeDirLabel, 1, 2, 2, 3)
 
 	vbox.pack_start(APKResizeTable, False, False, 0)
@@ -890,7 +908,7 @@ def Resize():
 	ExtensionBox.set_text(".png")
 	APKResizeTable.attach(ExtensionBox, 0, 1, 3, 4, xpadding=10)
 
-	ResizeStartButton = gtk.Button("Start resizing")
+	ResizeStartButton = gtk.Button(_("Start resizing"))
 	ResizeStartButton.connect("clicked", StartResize)
 	vbox.pack_start(ResizeStartButton, False, False, 15)
 
@@ -989,7 +1007,7 @@ def Theme():
 
 def PrepareBuilding():
 	def Prepare(cmd):
-		NewDialog("Info", "Please check the terminal for further progress.")
+		NewDialog("Info", _("Please check the terminal for further progress."))
 		os.system("""sudo add-apt-repository ppa:fkrull/deadsnakes
 sudo apt-get update &
 sudo apt-get upgrade &
@@ -1149,7 +1167,7 @@ g++-multilib mingw32 openjdk-6-jdk tofrodos libxml2-utils xsltproc zlib1g-dev:i3
 
 	
 
-	label=gtk.Label("You need this option before you can build.\nPlease select your OS...")
+	label=gtk.Label( _("You need this option before you can build.\nPlease select your OS..."))
 	box.pack_start(label, False, False, 10)
 
 	Button1004 = gtk.RadioButton(None, "Ubuntu 10.04")
@@ -1186,7 +1204,7 @@ g++-multilib mingw32 openjdk-6-jdk tofrodos libxml2-utils xsltproc zlib1g-dev:i3
 	notebook.set_current_page(notebook.get_n_pages() - 1)
 
 def SDK():
-	print("\n\n Downloading SDK installer!\n\n")
+	print _("\n\n Downloading SDK installer!\n\n")
 	if OS == 'Lin':
 		#urllib.urlretrieve('http://dl.google.com/android/android-sdk_r16-linux.tgz', 'SDK.tgz')
 		os.system("%s x -y SDK.tgz -o%s" %(sz, Home))
@@ -1202,7 +1220,7 @@ def SDK():
 		os.system("chmod 777 " + Home + "/android-sdk-macosx/* -R")
 		os.system("cd " + Home + "/android-sdk-macosx/tools")
 	if OS == 'Lin' or OS == 'Mac':
-		print("\n\n\n A popup will show. This is the SDK installer, configure it!\n\n\n")
+		print _("\n\n\n A popup will show. This is the SDK installer, configure it!\n\n\n")
 		os.system("pwd")
 		os.system("android &")
 
@@ -1239,8 +1257,8 @@ def BuildSource():
 		os.system(os.path.join(ScriptDir, "Source", "Build.sh") + ' sync &')
 		StartBuild("cmd")
 	def StartBuild(cmd):
-		if not os.path.exists(SourceDir + "/.repo"):
-			NewDialog("ERROR", SourceDir + " does not exist!\nPress SYNC instead.")
+		if not os.path.exists(os.path.join(SourceDir, ".repo")):
+			NewDialog("ERROR", _(SourceDir + " does not exist!\nPress SYNC instead."))
 		else:
 			notebook.remove_page(notebook.get_n_pages() -1)
 			sw = gtk.ScrolledWindow()
@@ -1355,10 +1373,10 @@ def BuildSource():
 	Quiet = gtk.CheckButton( _("Be quiet!"))
 	vbox1.pack_start(Quiet, False, False, 0)
 
-	Local = gtk.CheckButton("Sync local only")
+	Local = gtk.CheckButton( _("Sync local only"))
 	vbox1.pack_start(Local, False, False, 0)
 
-	Jobs = gtk.CheckButton("Custom number of parallel jobs: %s" % Cores )
+	Jobs = gtk.CheckButton(_("Custom number of parallel jobs: %s" % Cores ))
 	vbox1.pack_start(Jobs, False, False, 0)
 
 	SkipButton = gtk.Button( _("Build (Only when synced)"))
@@ -1373,16 +1391,16 @@ def BuildSource():
 	Quiet2 = gtk.CheckButton( _("Be quiet!"))
 	vbox5.pack_start(Quiet2, False, False, 0)
 
-	Local2 = gtk.CheckButton("Sync local only")
+	Local2 = gtk.CheckButton( _("Sync local only"))
 	vbox5.pack_start(Local2, False, False, 0)
 
-	Jobs2 = gtk.CheckButton("Custom number of parallel jobs: %s" % Cores )
+	Jobs2 = gtk.CheckButton(_("Custom number of parallel jobs: %s" % Cores ))
 	vbox5.pack_start(Jobs2, False, False, 0)
 
 	vbox.pack_start(hbox, False, False, 10)
 
 
-	BuildLabel = NewPage("Build from Source", vbox)
+	BuildLabel = NewPage(_("Build from Source"), vbox)
 	BuildLabel.show_all()
 
 	notebook.insert_page(vbox, BuildLabel)
@@ -1467,7 +1485,7 @@ def DeCompile():
 		NameBtn.connect("toggled", AddToList, comname, dec, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
 
-	StartButton = gtk.Button("Start (De)Compiling")
+	StartButton = gtk.Button(_("Start (De)Compiling"))
 	StartButton.connect("clicked", Start)
 	vbox.pack_start(StartButton, False, False, 15)
 
@@ -1555,7 +1573,7 @@ def Sign():
 		
 	notebook = MainApp.notebook
 	vbox = gtk.VBox()
-	label = gtk.Label("Choose the key you want to sign with:")
+	label = gtk.Label(_("Choose the key you want to sign with:"))
 	vbox.pack_start(label, False, False, 10)
 	media = gtk.RadioButton(None, "Media")
 	vbox.pack_start(media, False, False, 2)
@@ -1609,7 +1627,7 @@ def Zipalign():
 	notebook = MainApp.notebook
 	vbox = gtk.VBox()
 
-	label = gtk.Label("Choose the APKs you want to zipalign")
+	label = gtk.Label(_("Choose the APKs you want to zipalign"))
 	vbox.pack_start(label, False, False, 10)
 	
 	zipapk = []
@@ -1620,7 +1638,7 @@ def Zipalign():
 		NameBtn.connect("toggled", AddToList, zipapk, Name, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
 
-	StartBtn = gtk.Button("Zipalign")
+	StartBtn = gtk.Button(_("Zipalign"))
 	StartBtn.connect("clicked", StartZip)
 	vbox.pack_start(StartBtn, False, False, 5)
 	
@@ -1634,7 +1652,7 @@ def Zipalign():
 
 def Install():
 	def StartInst(cmd):
-		print("\n Waiting for device to connect via ADB...\n\n")
+		print _("\n Waiting for device to connect via ADB...\n\n")
 		os.system("adb wait-for-device")
 		Number = len(apk)
 		for num in range(0, Number):
@@ -1642,7 +1660,7 @@ def Install():
 			os.system("adb install %s" % APK)
 	ADB = str(os.system("adb version"))
 	if not ADB == '0':
-		print("The Android SDK is not installed. Do you want to install it now?\n")
+		print _("The Android SDK is not installed. Do you want to install it now?\n")
 		Choice = raw_input("Choose option [Y/n] :  ")
 		if not Choice == 'n' :
 			SDK()
@@ -1650,7 +1668,7 @@ def Install():
 	notebook = MainApp.notebook
 	
 	vbox = gtk.VBox()
-	label = gtk.Label("Choose the APKs you want to install")
+	label = gtk.Label(_("Choose the APKs you want to install"))
 	vbox.pack_start(label, False, False, 10)
 	
 	apk = []
@@ -1661,7 +1679,7 @@ def Install():
 		NameBtn.connect("toggled", AddToList, apk, Name, NameBtn)
 		vbox.pack_start(NameBtn, False, False, 0)
 
-	StartBtn = gtk.Button("Install")
+	StartBtn = gtk.Button(_("Install"))
 	StartBtn.connect("clicked", StartInst)
 	vbox.pack_start(StartBtn, False, False, 5)
 	
@@ -1676,7 +1694,7 @@ def Install():
 def BakSmali():
 	def StartBaksmali(cmd):
 		if Std.get_active():
-			NewDialog("ERROR!", "No smali folder selected!")
+			NewDialog("ERROR!", _("No smali folder selected!"))
 		else:
 			if not CstApi.get_text() == '':
 				Api = "-a %s" % CstApi.get_text()
@@ -1691,7 +1709,7 @@ def BakSmali():
 			os.system("java -jar %s %s -o %s %s" %(BaksmaliJar, dexfile, outdir, Api))
 	def StartSmali(cmd):
 		if Std.get_active():
-			NewDialog("ERROR!", "No smali folder selected!")
+			NewDialog("ERROR!", _("No smali folder selected!"))
 		else:
 			if not CstApi.get_text() == '':
 				Api = "-a %s" % CstApi.get_text()
@@ -1783,7 +1801,7 @@ def Deodex():
 			os.system("%s a -y -tzip %s %s -mx9" %(sz, apk, os.path.join(WorkDir, "*")))
 
 		print _("\n\nDeodexing done!\n\n")
-		NewDialog("Deodex", "Done!")
+		NewDialog("Deodex", _("Done!"))
 			
 	def DeodexStart(cmd):
 		if not os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "IN")) == '':
@@ -1811,7 +1829,7 @@ def Deodex():
 			window.show_all()
 			notebook.set_current_page(notebook.get_n_pages() - 1)
 		else:
-			NewDialog("ERROR", "No file inside %s!" % os.path.join(ScriptDir, "Advance", "ODEX", "IN") )
+			NewDialog("ERROR", _("No file inside %s!" % os.path.join(ScriptDir, "Advance", "ODEX", "IN")) )
 	notebook = MainApp.notebook
 	vbox = gtk.VBox(False, 0)
 
@@ -1819,7 +1837,7 @@ def Deodex():
 	vbox.pack_start(InfoLabel, False, False, 3)
 
 	ApiBox = gtk.Entry()
-	ApiBox.set_text("Choose a custom API level (default = 14)")
+	ApiBox.set_text(_("Choose a custom API level (default = 14)"))
 	vbox.pack_start(ApiBox, False, False, 3)
 
 	DoneBtn = gtk.Button( _("Done") )
@@ -1936,7 +1954,7 @@ def Changelog():
 	sw = gtk.ScrolledWindow()
 	ChangeWindow.add(sw)
 
-	changelog = open(ScriptDir + "/changelog", "r")
+	changelog = open(os.path.join(ScriptDir, "changelog"), "r")
 	Text = changelog.read()
 	Label = gtk.Label(Text)
 
@@ -1954,7 +1972,7 @@ def Log():
 	vbox.pack_start(sw)
 	LogWindow.add(vbox)
 
-	log = open(ScriptDir + "/log", "r")
+	log = open(os.path.join(ScriptDir, "log"), "r")
 	Text = log.read()
 	Label = gtk.Label(Text)
 	Label.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("blue"))
