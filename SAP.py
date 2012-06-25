@@ -294,9 +294,8 @@ print ("Language = " + Language)
 
 
 class MainApp():
-	Icon = "/images/icon.png"
 
-	placeIcon = gtk.gdk.pixbuf_new_from_file(ScriptDir + Icon)
+	placeIcon = gtk.gdk.pixbuf_new_from_file(os.path.join(ScriptDir, "images", "icon.png"))
 	window.set_icon(placeIcon)
 
 	#
@@ -358,7 +357,7 @@ class MainApp():
 	UtilLabel = gtk.Label( _("Utilities"))
 
 	image = gtk.Image()
-	image.set_from_file("images/Utils.png")
+	image.set_from_file(os.path.join(ScriptDir, "images", "Utils.png"))
 	image.show()
 	UtilVBox.pack_start(image)
 
@@ -395,7 +394,7 @@ class MainApp():
 	DevelopVBox = gtk.VBox()
 
 	image = gtk.Image()
-	image.set_from_file("images/Develop.png")
+	image.set_from_file(os.path.join(ScriptDir, "images", "Develop.png"))
 	image.show()
 	DevelopVBox.pack_start(image)
 
@@ -436,7 +435,7 @@ class MainApp():
 	APKVBox = gtk.VBox()
 
 	image = gtk.Image()
-	image.set_from_file("images/APK.png")
+	image.set_from_file(os.path.join(ScriptDir, "images", "APK.png"))
 	image.show()
 	APKVBox.pack_start(image)
 
@@ -468,7 +467,7 @@ class MainApp():
 	AdvanceLabel = gtk.Label( _("Advanced") )
 
 	image = gtk.Image()
-	image.set_from_file("images/Advanced.png")
+	image.set_from_file(os.path.join(ScriptDir, "images", "Advanced.png"))
 	image.show()
 	AdvanceVBox.pack_start(image)
 
