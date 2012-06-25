@@ -27,11 +27,12 @@ _ = gettext.gettext
 
 ScriptDir=os.path.abspath(os.path.dirname(sys.argv[0]))
 Home=os.path.expanduser('~')
+ConfDir = os.path.join(Home, ".SA")
 MyFile = os.path.abspath(sys.argv[0].replace(ScriptDir, ''))
 Cores = str(multiprocessing.cpu_count())
 
 
-if not os.path.exists(os.path.join(Home, ".SA", "Language")):
+if not os.path.exists(os.path.join(ConfDir, "Language")):
 	def PickLanguage(cmd):
 		f = open(os.path.join(Home, ".SA", "Language"), "w")
 		f.flush()
@@ -179,8 +180,8 @@ def callback(widget, option):
 		Install()
 	elif option == 'BakSmali':
 		BakSmali()
-	#elif option == 'Odex':
-	#	Odex()
+	elif option == 'Odex':
+		Odex()
 	elif option == 'Deodex':
 		Deodex()
 	elif option == 'BP':
@@ -1206,7 +1207,7 @@ g++-multilib mingw32 openjdk-6-jdk tofrodos libxml2-utils xsltproc zlib1g-dev:i3
 def SDK():
 	print _("\n\n Downloading SDK installer!\n\n")
 	if OS == 'Lin':
-		#urllib.urlretrieve('http://dl.google.com/android/android-sdk_r16-linux.tgz', 'SDK.tgz')
+		urllib.urlretrieve('http://dl.google.com/android/android-sdk_r16-linux.tgz', 'SDK.tgz')
 		os.system("%s x -y SDK.tgz -o%s" %(sz, Home))
 		os.system("%s x -y %s/SDK.tar -o%s" %(sz, Home, Home))
 		os.system("chmod 777 " + Home + "/android-sdk-linux/* -R")
@@ -1791,10 +1792,16 @@ def Deodex():
 			odex = os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", apk.replace('apk', 'odex'))
 			WorkDir = os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT")
 			print _("Deodexing %s" % odex)
-			if Debug == True: 
-				print("java -Xmx512m -jar %s%s%s -x %s -o %s" %(BaksmaliJar, bootclass, api, odex, os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT") ) )
 			os.system("java -Xmx512m -jar %s%s%s -x %s -o %s" %(BaksmaliJar, bootclass, api, odex, os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT") ) )
 			os.system("java -Xmx512m -jar %s %s %s -o %s" %(SmaliJar, api, os.path.join(WorkDir, "*"), os.path.join(WorkDir, "classes.dex")))
+			cont = []
+			for fname in os.listdir(WorkDir):
+				if not fname == "classes.dex":
+					fname = os.path.join(WorkDir, fname)
+					if os.path.isdir(fname):
+						shutil.rmtree(fname)
+					elif not os.path.isdir(fname):
+						os.remove(fname)
 			os.system("%s x -y -o%s %s" %(sz, WorkDir, apk))
 			os.remove(odex)
 			os.remove(apk)
@@ -1845,6 +1852,72 @@ def Deodex():
 	vbox.pack_start(DoneBtn, False, False, 3)
 	
 	DeodexLabel = NewPage("De-ODEX", vbox)
+	DeodexLabel.show_all()
+	notebook.insert_page(vbox, DeodexLabel)
+	window.show_all()
+	notebook.set_current_page(notebook.get_n_pages() - 1)
+
+def Odex():
+	def DoOdex(cmd, odex, bootclass=''):
+		buildprop = open(os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "build.prop"), "r")
+		for line in buildprop.readlines():
+			if line.startswith("ro.build.version.release=2.3.7"):
+				global api
+				version = line.replace('ro.build.version.release=', '')
+				if version.startswith('2.3'):
+					api = ' -a 12'
+				elif version.startswith('4'):
+					api = ' -a 14'
+		for apk in odex:
+			shutil.rmtree(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"), True)
+			os.mkdir(os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT"))
+			apk = os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", apk)
+			odex = os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", apk.replace('apk', 'odex'))
+			WorkDir = os.path.join(ScriptDir, "Advance", "ODEX", "CURRENT")
+			print _("Odexing %s" % odex)
+			os.system("%s e -tzip %s classes.dex -o%s" %(sz, apk, WorkDir))
+			Classes = os.path.join(WorkDir, "classes.dex")
+			shutil.move(Classes, odex)
+
+		print _("\n\nDeodexing done!\n\n")
+		NewDialog("Deodex", _("Done!"))
+			
+	def OdexStart(cmd):
+		if not os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "IN")) == '':
+			sw = gtk.ScrolledWindow()
+			vbox = gtk.VBox()
+			sw.add_with_viewport(vbox)
+			odex = []
+			UpdateZip = os.path.join(ScriptDir, "Advance", "ODEX", "IN", os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "IN"))[0])
+			zipfile.ZipFile(UpdateZip).extractall(path=os.path.join(ScriptDir, "Advance", "ODEX", "WORKING"))
+			for filea in os.listdir(os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app")):
+				if filea.endswith('.apk') and not os.path.exists(os.path.join(ScriptDir, "Advance", "ODEX", "WORKING", "system", "app", filea.replace('apk', 'odex'))):
+					NameBtn = gtk.CheckButton(filea)
+					NameBtn.set_active(1)
+					odex.append(filea)
+					NameBtn.connect("toggled", AddToList, odex, filea, NameBtn)
+					vbox.pack_start(NameBtn, False, False, 0)
+			StartButton = gtk.Button("Start Odex!")
+			StartButton.connect("clicked", DoOdex, odex)
+			vbox.pack_start(StartButton, False, False, 0)
+			DeodexLabel = NewPage( _("Start Odex") , sw)
+			DeodexLabel.show_all()
+			notebook.insert_page(sw, DeodexLabel)
+			window.show_all()
+			notebook.set_current_page(notebook.get_n_pages() - 1)
+		else:
+			NewDialog("ERROR", _("No file inside %s!" % os.path.join(ScriptDir, "Advance", "ODEX", "IN")) )
+	notebook = MainApp.notebook
+	vbox = gtk.VBox(False, 0)
+
+	InfoLabel = gtk.Label( _("Paste your ROMs update inside %s" % os.path.join(ScriptDir, "Advance", "ODEX", "IN") ) )
+	vbox.pack_start(InfoLabel, False, False, 3)
+
+	DoneBtn = gtk.Button( _("Done") )
+	DoneBtn.connect("clicked", OdexStart)
+	vbox.pack_start(DoneBtn, False, False, 3)
+	
+	DeodexLabel = NewPage("Re-ODEX", vbox)
 	DeodexLabel.show_all()
 	notebook.insert_page(vbox, DeodexLabel)
 	window.show_all()
@@ -1986,13 +2059,26 @@ def Log():
 	LogWindow.show_all()
 
 def Bug(cmd=''):
-	clipboard = gtk.clipboard_get()
+	if not os.path.exists(os.path.join(ConfDir, "REPLY.zip")):
+		urllib.urlretrieve("http://db.tt/KsHKMEJc", os.path.join(ConfDir, "REPLY.zip"))
+	zipfile.ZipFile(os.path.join(ConfDir, "REPLY.zip")).extractall(path=ConfDir)
+	HTML = open(os.path.join(ConfDir, "REPLY.html"))
+	NewBug = open(os.path.join(ConfDir, "NewBug.html"), "a")
+	NewBug.flush()
 	text = open(os.path.join(ScriptDir, "log"), "r").read()
-	clipboard.set_text("[QUOTE]%s[/QUOTE]" % text)
-	clipboard.store()
+	linen = 0
+	for line in HTML.readlines():
+		linen = linen+1
+		if linen == 593:
+			line = line.replace('><', '>%s<' % text)
+		NewBug.write(line)
+		NewBug.flush()
 	test = NewDialog("BUGREPORT", _("The log content has been copied to the clipboard"
 				"Please paste it in the website that will be opened now!"))
-	Web.open("http://forum.xda-developers.com/newreply.php?do=newreply&noquote=1&p=22414621")
+	#NewBug.close()
+	webbrowser.open(os.path.join(ConfDir, "NewBug.html"))
+	time.sleep(1)
+	os.remove(os.path.join(ConfDir, "NewBug.html"))
 
 def Help():
 	Web.open("http://forum.xda-developers.com/showpost.php?p=23546408&postcount=9")
