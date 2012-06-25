@@ -31,6 +31,8 @@ ConfDir = os.path.join(Home, ".SA")
 MyFile = os.path.abspath(sys.argv[0].replace(ScriptDir, ''))
 Cores = str(multiprocessing.cpu_count())
 
+# Choose language
+
 
 if not os.path.exists(os.path.join(ConfDir, "Language")):
 	def PickLanguage(cmd):
@@ -72,6 +74,8 @@ if not os.path.exists(os.path.join(ConfDir, "Language")):
 		time.sleep(1)
 else:
 	FirstRun = False
+
+# APPLY LANGUAGE
 
 DIR = os.path.join(ScriptDir, "lang", open(os.path.join(Home, ".SA", "Language"), "r").read())
 APP = 'SAP'
@@ -139,6 +143,7 @@ def DebugOn(cmd):
 	f.close()
 	Restart("cmd")
 
+# Shotcuts 
 
 sz = os.path.join(ScriptDir, "7za")
 ApkJar = os.path.join(ScriptDir, "Utils", "apktool.jar")
@@ -150,6 +155,7 @@ Web = webbrowser.get()
 
 
 def callback(widget, option):
+	# REDIRECTS THE BUTTON OPTION TO A FUNCTION
 	if option == 'Cl':
 		Clean()
 	elif option == '1':
@@ -199,6 +205,8 @@ def callback(widget, option):
 	else :
 		print _("%s is not defined yet, SORRY!" % option)
 
+# New dialog
+
 def NewDialog(Title, Text):
 	dialog = gtk.MessageDialog(None, gtk.DIALOG_MODAL, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_OK)
 	dialog.set_markup("<b>%s</b>" % Title)
@@ -206,7 +214,7 @@ def NewDialog(Title, Text):
 	dialog.run()
 	dialog.destroy()
 
-
+# Restart option
 
 def Restart(cmd):
 	python = sys.executable
@@ -221,12 +229,16 @@ def KillPage(cmd, child):
 	child.destroy()
 	notebook.set_current_page(0)
 
+# Basic AddToList
+
 def AddToList(cmd, List, name, NameBtn, Single=False):
 	if Single==False:
 		if not name in List:
 			List.append(name)
 		if not NameBtn.get_active():
 			List.remove(name)
+
+# FInd files (C) StackOverflow
 
 
 def find_files(directory, pattern):
@@ -268,6 +280,8 @@ if not os.path.exists(os.path.join(Home, ".SA", "ran")):
 else:
 	FirstRun = False
 
+# DEFINE WINDOW
+
 
 window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 window.set_title("StudioAndroid")
@@ -281,7 +295,7 @@ vbox = gtk.VBox(False, 5)
 hbox = gtk.HBox(False, 5)
 
 
-
+# PRINT INFO
 
 print _("OS = " + OS)
 print _("Cores = " + Cores)
@@ -294,6 +308,8 @@ print ("Language = " + Language)
 
 
 class MainApp():
+
+	# MAIN APP
 
 	placeIcon = gtk.gdk.pixbuf_new_from_file(os.path.join(ScriptDir, "images", "icon.png"))
 	window.set_icon(placeIcon)
@@ -496,6 +512,8 @@ class MainApp():
 
 	vbox.show_all()
 	window.show_all()
+
+# FROM HERE, ALL FUNCTIONS USED IN MAINAPP WILL BE DEFINED
 
 def Clean():
 	for tree in ['APK', 'Resize', 'Resized', 'Resizing', 'Advance', 'Utils', 'Theme']:

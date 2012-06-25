@@ -12,7 +12,7 @@ If you have some free time, please suggest some ideas!
 Run the SAP script.
 The way you do this depends on your OS.
 -Ubuntu: double-click "SAP" OR double-click and run in terminal "Studio"
--Windows: Right-click SAP.py, Open WIth > Python
--Mac OS X: Double-click SAP
+-Windows: double-click "SAP.exe" OR Right-click "SAP.py", Open With > Python
+-Mac OS X: Double-click "SAP"
 
 
