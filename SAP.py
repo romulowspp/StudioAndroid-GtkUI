@@ -1511,7 +1511,9 @@ def DeCompile():
 
 	DeComLabel = NewPage("(De)Compile", vbox)
 	DeComLabel.show_all()
-	notebook.insert_page(vbox, DeComLabel)
+	sw = gtk.ScrolledWindow()
+	sw.add_with_viewport(vbox)
+	notebook.insert_page(sw, DeComLabel)
 	DeCompileWindow.show_all()
 	notebook.set_current_page(notebook.get_n_pages() - 1)
 
@@ -2087,7 +2089,7 @@ def Bug(cmd=''):
 	for line in HTML.readlines():
 		linen = linen+1
 		if linen == 593:
-			line = line.replace('><', '>%s<' % text)
+			line = line.replace('><', '>[QUOTE=log]%s[/QUOTE]<' % text)
 		NewBug.write(line)
 		NewBug.flush()
 	test = NewDialog("BUGREPORT", _("The log content has been copied to the clipboard"
