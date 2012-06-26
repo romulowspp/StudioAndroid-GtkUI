@@ -90,3 +90,10 @@ DeOdex bug fixed
 Odex added (TEST PLEASE!!)
 Windows EXE Available!!
 }}}
+
+%11
+{{{
+Compile script added: Compile ANY python script on ANY OS (Makes it faster), default=compile StudioAndroid
+Changed name && removed CLI version
+DeCompile and ExPackage now have scroll bars for mass-(De)Compiling / (Ex)Packaging
+}}}

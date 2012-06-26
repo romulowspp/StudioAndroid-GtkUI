@@ -9,10 +9,10 @@ If you have some free time, please suggest some ideas!
   | | | | |______|   \____/      |_|    |______|
 
 
-Run the SAP script.
+Run the SA script.
 The way you do this depends on your OS.
--Ubuntu: double-click "SAP" OR double-click and run in terminal "Studio"
--Windows: double-click "SAP.exe" OR Right-click "SAP.py", Open With > Python
--Mac OS X: Double-click "SAP"
+-Ubuntu: double-click "StudioLinux" OR double-click and/or run in terminal "Studio"
+-Windows: double-click "StudioWindows.exe" OR Right-click "SA.py", Open With > Python
+[-Mac OS X: Run SA.py in terminal (Double-click "StudioMac")]
 
 
