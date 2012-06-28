@@ -151,6 +151,7 @@ SignJar = os.path.join(ScriptDir, "Utils", "signapk.jar")
 ZipalignFile = os.path.join(ScriptDir, "Utils", "zipalign")
 SmaliJar = os.path.join(ScriptDir, "Utils", "smali-1.3.2.jar")
 BaksmaliJar = os.path.join(ScriptDir, "Utils", "baksmali-1.3.2.jar")
+OptPng = os.path.join(ScriptDir, "Utils", "optipng")
 Web = webbrowser.get()
 
 
@@ -166,6 +167,8 @@ def callback(widget, option):
 		Resize()
 	elif option == '4':
 		Theme()
+	elif option == '5':
+		OptimizeImage()
 	elif option == '6':
 		PrepareBuilding()
 	elif option == 'BuildSource':
@@ -1516,6 +1519,45 @@ def DeCompile():
 	notebook.insert_page(sw, DeComLabel)
 	DeCompileWindow.show_all()
 	notebook.set_current_page(notebook.get_n_pages() - 1)
+	
+	
+def OptimizeImage():
+	def Start(cmd):
+		dialog = gtk.FileChooserDialog("Open..",  None, gtk.FILE_CHOOSER_ACTION_OPEN, 
+									   (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+		dialog.set_default_response(gtk.RESPONSE_OK)
+		dialog.set_select_multiple(True)
+		filter = gtk.FileFilter()
+		filter.set_name("Images")
+		filter.add_mime_type("image/png")
+		filter.add_pattern("*.png")
+		dialog.add_filter(filter)
+		response = dialog.run()
+		if response == gtk.RESPONSE_OK:
+			for file in dialog.get_filenames():
+				if Debug == True: print ("%s -o99 %s" %(OptPng, file))				
+				os.system("%s -o99 %s" %(OptPng, file))
+			NewDialog(_("Optimize Images"),  _("Successfully optimized images"))
+		elif response == gtk.RESPONSE_CANCEL:
+			print 'Closed, no files selected'
+		dialog.destroy()
+	
+	OptimizeImageWindow = window
+	notebook = MainApp.notebook
+	sw = gtk.ScrolledWindow()
+	
+	vbox = gtk.VBox()
+	ChooseImageButton = gtk.Button(None, _("Choose Images and Optimize"))
+	vbox.pack_start(ChooseImageButton, True, False, 5)
+	ChooseImageButton.connect("clicked", Start)
+	
+	OptimizeLabel = NewPage(_("Optimize Images"), sw)
+	OptimizeLabel.show_all()
+	sw.add_with_viewport(vbox)
+	notebook.insert_page(sw, OptimizeLabel)
+	OptimizeImageWindow.show_all()
+	notebook.set_current_page(notebook.get_n_pages() - 1)
+	
 
 def ExPackage():
 	def Start(cmd):
